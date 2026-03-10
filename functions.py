@@ -104,3 +104,5 @@ def stft(sig, time, nperseg=256, noverlap=None, window='hann'):
     amplitude = np.abs(Zxx)
 
     return f, t_seg, amplitude, fs
+
+#test
