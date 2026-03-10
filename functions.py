@@ -4,6 +4,7 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 import os
 
+
 def get_data(file):
    
     # Read CSV
@@ -14,6 +15,18 @@ def get_data(file):
     data = data.astype(float)
     
     return data
+
+def std(y):
+
+    if isinstance(y, (pd.DataFrame, pd.Series)):
+        y = y.to_numpy()
+
+    y_mean = np.mean(y)
+    y_s = np.std(y)
+
+    y = (y-y_mean)/y_s
+
+    return y
 
 def plot(x, y, downsampling=1, name="plot"):
     
@@ -90,8 +103,12 @@ def plot_stft(f, t_seg, amplitude, downsampling=1, name="stft_plot", dB=False):
 
 def stft(sig, time, nperseg=256, noverlap=None, window='hann'):
 
-    time = time.to_numpy()
-    sig = sig.to_numpy()
+    if isinstance(sig, (pd.DataFrame, pd.Series)):
+        sig = sig.to_numpy()
+    if isinstance(time, (pd.DataFrame, pd.Series)):
+        time = time.to_numpy()
+
+    
 
     dt = np.mean(np.diff(time))
     fs = 1.0 / dt

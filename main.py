@@ -9,8 +9,13 @@ data = func.get_data(r"Data\In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
 t = data["Propagation time (micsec)"]
 y = data["Sum Propagated signal (nm)"]
 
-func.plot(t, y, 10, 'time_vs_volt')
+y_std = func.std(y)
 
-f, t_seg, amplitude, fs = func.stft(y, t)
+func.plot(t, y, 1, 'time_vs_volt')
+
+
+
+
+f, t_seg, amplitude, fs = func.stft(y_std, t)
 
 func.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram")
