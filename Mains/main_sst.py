@@ -1,10 +1,15 @@
 import numpy as np
-import functions as func
-from structuralhealthmonitoring.transforms.sst_processing import sst, sst_complex, isst, plot_sst
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import preprocess
+from transforms import stft_processing 
+from transforms import sst_processing 
 
 
 # ── Load real data ──────────────────────────────────────────────────────────
-data = func.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
 
 
 t = data["Propagation time (micsec)"]
@@ -12,27 +17,27 @@ y = data["Sum Propagated signal (nm)"]
 
 
 # ── Raw signal plot ─────────────────────────────────────────────────────────
-func.plot(t, y, 10, 'time_vs_volt')
+preprocess.plot(t, y, 1, 'time_vs_volt')
 
 
 # ── STFT (original, from functions.py) ─────────────────────────────────────
-f, t_seg, amplitude, fs = func.stft(y, t)
-func.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram_version_sst",dB=True)
+f, t_seg, amplitude, fs = stft_processing.stft(y, t)
+stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram_version_sst_v1",dB=True)
 
 
 # ── SST — sharpened version of the STFT above ──────────────────────────────
-f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst(y, t, win_len=256, hop_len=1)
-plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram", dB=True)
+f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst_processing.sst(y, t, win_len=256, hop_len=1)
+sst_processing.plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram_v1", dB=True)
 
 
 # ── Inverse SST — reconstruct signal and compare ───────────────────────────
-_, _, Tx_c, _, _ = sst_complex(y, t, win_len=256, hop_len=1)
-x_rec = isst(Tx_c, win_len=256, hop_len=1)
+_, _, Tx_c, _, _ = sst_processing.sst_complex(y, t, win_len=256, hop_len=1)
+x_rec = sst_processing.isst(Tx_c, win_len=256, hop_len=1)
 
 
 t_np = t.to_numpy()
 n = min(len(t_np), len(x_rec))
-func.plot(t_np[:n], x_rec[:n], name="SST_Reconstructed")
+preprocess.plot(t_np[:n], x_rec[:n], 1, name="SST_Reconstructed_v1")
 ''' 
 #Part2 2: Synchrosqueezing Transform (SST) and Inverse SST (iSST):
 from sst_processing import get_data, stft, plot_stft, plot_sst, plot  #,sst_stft, sst_cwt,

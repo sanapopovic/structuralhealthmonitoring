@@ -3,7 +3,7 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 import os
-from PyEMD import EMD
+#from PyEMD import EMD
 
 
 
@@ -66,20 +66,7 @@ def plot_stft(f, t_seg, amplitude, downsampling=1, name="stft_plot", dB=False):
     print(f"Plot saved to {filepath}")
 
 
-    time = time.to_numpy()
-    sig = sig.to_numpy()
 
-    dt = np.mean(np.diff(time))
-    fs = 1.0 / dt
-
-    if noverlap is None:
-        noverlap = nperseg // 2
-
-    f, t_seg, Zxx = signal.stft( sig, fs=fs, window='hann',nperseg=256, noverlap=128,boundary=None)
-    
-    amplitude = np.abs(Zxx)
-
-    return f, t_seg, amplitude, fs
 
 #test
 
