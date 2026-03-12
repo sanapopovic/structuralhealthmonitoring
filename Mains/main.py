@@ -24,7 +24,6 @@ coeffs = wavelet_decompose(y, wavelet='db4', level=None)
 cD1 = coeffs[-1]
 
 # simple time axis to match its length
-import numpy as np
 t_cD1 = np.linspace(t.iloc[0], t.iloc[-1], len(cD1))
 
 preprocess.plot(t_cD1, cD1, 1, 'wavelet_detail_L1')
