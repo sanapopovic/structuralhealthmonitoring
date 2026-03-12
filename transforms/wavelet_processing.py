@@ -4,23 +4,23 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-def wavelet_decompose(sig, wavelet='db4', level=None):
-    if isinstance(sig, (pd.Series, pd.DataFrame)):
-        sig = sig.to_numpy().squeeze()
+def wavelet_decompose(sig, wavelet='db4', level=None):  #this is a multi-level decomposition, not a single level
+    if isinstance(sig, (pd.Series, pd.DataFrame)):  #signal coverted to numpy array if it is a pandas Series or DataFrame
+        sig = sig.to_numpy().squeeze() #squeeze is used to remove any extra dimensions, ensuring we have a 1D array for processing.
 
-    sig = np.asarray(sig, dtype=float).copy()
+    sig = np.asarray(sig, dtype=float).copy() #ensure the signal is a numpy array of type float, and create a copy to avoid modifying the original data.
 
-    w = pywt.Wavelet(wavelet)
-    max_level = pywt.dwt_max_level(len(sig), w.dec_len)
+    w = pywt.Wavelet(wavelet) #create a wavelet object based on the specified wavelet name. Using db4 (Daubechies 4)
+    max_level = pywt.dwt_max_level(len(sig), w.dec_len) #calculate the maximum level of decomposition based on the length of the signal and the length of the wavelet filter. This ensures we don't decompose beyond what the signal can support.
     print("max_level =", max_level)
 
     if level is None:
-        level =  max_level  # choose up to 5 levels
+        level =  max_level  #if level is not specified, use the maximum level of decomposition
 
-    coeffs = pywt.wavedec(sig, wavelet=w, level=level)
+    coeffs = pywt.wavedec(sig, wavelet=w, level=level) #actual Discrete Wavelet Transform
     return coeffs  
 
-def wavelet_scalogram(t, sig, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet_scalogram"):
+def wavelet_scalogram(t, sig, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet_scalogram"): #wavelet time–frequency map (CWT)
     sig = np.asarray(sig).squeeze()
     t = np.asarray(t).squeeze()
 
