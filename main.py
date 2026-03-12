@@ -16,7 +16,7 @@ preprocess.plot(t, y, 10, 'time_vs_volt')
 
 f, t_seg, amplitude, fs = stft_processing.stft(y, t)
 
-stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram")
+stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="spectrogram", dB=True)
 
 coeffs = wavelet_decompose(y, wavelet='db4', level=None)
 
