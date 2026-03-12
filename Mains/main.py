@@ -21,7 +21,7 @@ stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="spectrogram
 
 import numpy as np
 import functions as func
-from sst_processing import sst, sst_complex, isst, plot_sst
+from structuralhealthmonitoring.transforms.sst_processing import sst, sst_complex, isst, plot_sst
 
 # ── Load real data ──────────────────────────────────────────────────────────
 data = func.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
