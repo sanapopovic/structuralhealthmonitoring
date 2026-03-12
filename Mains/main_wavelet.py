@@ -20,7 +20,14 @@ cD1 = coeffs[-1] #grab first detail level (finest scale)
 
 #simple time axis to match its length
 t_cD1 = np.linspace(t.iloc[0], t.iloc[-1], len(cD1))
+plt.figure(figsize=(8,4))
+plt.plot(t_cD1, cD1, linewidth=1)
+plt.xlabel("Time [µs]")
+plt.ylabel("Wavelet detail coefficient (level 1)")
+plt.title("wavelet_detail_L1")
+plt.savefig("plots/wavelet_detail_L1.png", dpi=300, bbox_inches='tight')
+plt.close()
 
-preprocess.plot(t_cD1, cD1, 1, 'wavelet_detail_L1')
+
 
 wavelet_scalogram(t, y, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet

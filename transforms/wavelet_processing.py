@@ -20,6 +20,7 @@ def wavelet_decompose(sig, wavelet='db4', level=None):  #this is a multi-level d
     coeffs = pywt.wavedec(sig, wavelet=w, level=level) #actual Discrete Wavelet Transform
     return coeffs  
 
+
 def wavelet_scalogram(t, sig, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet_scalogram"): #wavelet time–frequency map (CWT)
     sig = np.asarray(sig).squeeze()
     t = np.asarray(t).squeeze()
