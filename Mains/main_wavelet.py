@@ -1,5 +1,7 @@
 import numpy as np
 import scipy as sp
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import preprocess
 import transforms.stft_processing as stft_processing
 import matplotlib.pyplot as plt
@@ -20,11 +22,9 @@ stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="spectrogram
 
 coeffs = wavelet_decompose(y, wavelet='db4', level=None)
 
-# grab first detail level (finest scale)
-cD1 = coeffs[-1]
+cD1 = coeffs[-1] #grab first detail level (finest scale)
 
 # simple time axis to match its length
-import numpy as np
 t_cD1 = np.linspace(t.iloc[0], t.iloc[-1], len(cD1))
 
 preprocess.plot(t_cD1, cD1, 1, 'wavelet_detail_L1')
