@@ -29,6 +29,8 @@ stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram
 f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst_processing.sst(y, t, win_len=256, hop_len=1)
 sst_processing.plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram_v1", dB=True)
 
+# ── 3D SST plot ─────────────────────────────────────────────────────────────
+sst_processing.plot_sst_3d(t_sst, f_sst, Tx_amp, name="SST_3D_v1", dB=True, downsampling=1) #freq_min=2, freq_max=3.5
 
 # ── Inverse SST — reconstruct signal and compare ───────────────────────────
 _, _, Tx_c, _, _ = sst_processing.sst_complex(y, t, win_len=256, hop_len=1)

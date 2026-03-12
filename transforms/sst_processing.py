@@ -89,6 +89,7 @@ def stft(sig_in, time, nperseg=256, noverlap=None, window='hann'):
     return f, t_seg, np.abs(Zxx), fs
 
 
+
 # ─────────────────────────────────────────────────────────────
 #  SST — Synchrosqueezed STFT  (equivalent to MATLAB fsst)
 # ─────────────────────────────────────────────────────────────
@@ -161,6 +162,66 @@ def isst(Tx, win_len=256, hop_len=1, window='hann'):
     x_rec = issq_stft(Tx, window=win_arr, hop_len=hop_len)
     return np.real(x_rec)
 
+def plot_sst_3d( t_seg, f, amplitude, downsampling=1, name="sst_3d", dB=False,
+                freq_min=None, freq_max=None, elev=30, azim=-60):
+    """
+    3-D surface plot of an SST or STFT amplitude matrix.
+
+    Parameters
+    ----------
+    f, t_seg, amplitude : same as plot_stft / plot_sst
+    downsampling        : thin the time axis for speed
+    dB                  : convert amplitude to dB before plotting
+    freq_min / freq_max : clip the frequency axis (e.g. your 2–3.5 MHz range)
+    elev, azim          : viewing angle (degrees)
+    """
+    from mpl_toolkits.mplot3d import Axes3D          # noqa: F401
+
+    f       = _to_numpy(f)
+    t_seg   = _to_numpy(t_seg)
+    amp     = np.asarray(amplitude)
+
+    # ── frequency crop ──────────────────────────────────────────────────────
+    mask = np.ones(len(f), dtype=bool)
+    if freq_min is not None:
+        mask &= f >= freq_min
+    if freq_max is not None:
+        mask &= f <= freq_max
+    f   = f[mask]
+    amp = amp[mask, :]
+
+    # ── time downsampling ───────────────────────────────────────────────────
+    t_seg = t_seg[::downsampling]
+    amp   = amp[:, ::downsampling]
+
+    # ── dB conversion ───────────────────────────────────────────────────────
+    if dB:
+        amp = 20 * np.log10(amp + 1e-12)
+
+    # ── meshgrid ─────────────────────────────────────────────────────────────
+    T, F = np.meshgrid(t_seg, f)
+
+    # ── plot ─────────────────────────────────────────────────────────────────
+    folder = "plots"
+    os.makedirs(folder, exist_ok=True)
+
+    fig = plt.figure(figsize=(12, 6))
+    ax  = fig.add_subplot(111, projection='3d')
+
+    surf = ax.plot_surface(T, F, amp, cmap='turbo', linewidth=0, antialiased=False)
+
+    ax.set_xlabel("Time [ms]")
+    ax.set_ylabel("Frequency [MHz]")
+    ax.set_zlabel("Amplitude (dB)" if dB else "Amplitude")
+    ax.set_title(name)
+    ax.view_init(elev=elev, azim=azim)
+    fig.colorbar(surf, ax=ax, shrink=0.5, label="Amplitude (dB)" if dB else "Amplitude")
+
+    plt.tight_layout()
+    filepath = os.path.join(folder, f"{name}.png")
+    plt.savefig(filepath, dpi=300)
+    plt.close()
+    print(f"Plot saved to {filepath}")
 
 # ─────────────────────────────────────────────────────────────
 #  Self-test  (mirrors the MATLAB fsst documentation example)
