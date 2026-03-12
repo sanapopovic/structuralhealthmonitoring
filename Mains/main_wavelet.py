@@ -14,11 +14,8 @@ data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm
 t = data["Propagation time (micsec)"]
 y = data["Sum Propagated signal (nm)"]
 
-preprocess.plot(t, y, 10, 'time_vs_volt')
-
-f, t_seg, amplitude, fs = stft_processing.stft(y, t)
-
-stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="spectrogram", dB=True)
+S, I, fs = stft_processing.stft(y, t)
+stft_processing.plot_stft(S, fs, hop=64, downsampling=1, name="spectogram",dB=True)
 
 coeffs = wavelet_decompose(y, wavelet='db4', level=None)
 
