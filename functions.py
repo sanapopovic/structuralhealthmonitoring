@@ -72,8 +72,6 @@ def stft(sig, time, win_length =256, hop= 128):
     if isinstance(time, (pd.DataFrame, pd.Series)):
         time = time.to_numpy()
 
-    
-
     dt = np.mean(np.diff(time))
     fs = 1.0 / dt
     w = signal.windows.hann(win_length, sym= False)
@@ -88,8 +86,6 @@ def stft(sig, time, win_length =256, hop= 128):
     else:
         I = 0
     
-   
-
     return S, I, fs
 
 def plot_stft(S, fs, hop, downsampling=1, name="stft_plot", dB=False):
