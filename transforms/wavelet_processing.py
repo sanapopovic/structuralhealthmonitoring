@@ -32,12 +32,12 @@ def wavelet_scalogram(t, sig, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet
 
     folder = "plots"
     os.makedirs(folder, exist_ok=True)
-
     plt.figure(figsize=(8,4))
     plt.pcolormesh(t, freqs, power, shading='gouraud') #Draws a heatmap: x = time, y = frequency, color = amplitude.
     plt.yscale('log')
     plt.xlabel("Time")
     plt.ylabel("Frequency [MHz]")
+    plt.ylim(1.5,3.5)
     plt.title(name)
     plt.colorbar(label="Amplitude")
     plt.tight_layout()
