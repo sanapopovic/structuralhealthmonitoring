@@ -24,17 +24,17 @@ def wavelet_scalogram(t, sig, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet
     sig = np.asarray(sig).squeeze()
     t = np.asarray(t).squeeze()
 
-    dt = np.mean(np.diff(t))  # sampling period
-    widths = np.geomspace(1, 512, n_scales)
+    dt = np.mean(np.diff(t))  #sampling period
+    widths = np.geomspace(1, 512, n_scales) #Creates n_scales wavelet scales from 1 to 512 on a logarithmic grid
 
-    cwtmatr, freqs = pywt.cwt(sig, widths, wavelet, sampling_period=dt)
-    power = np.abs(cwtmatr)
+    cwtmatr, freqs = pywt.cwt(sig, widths, wavelet, sampling_period=dt) #Runs the CWT. 2D matrix (frequency × time), freqs holds the corresponding frequencies in Hz.
+    power = np.abs(cwtmatr) #Takes magnitude so you can plot amplitude/energy.
 
     folder = "plots"
     os.makedirs(folder, exist_ok=True)
 
     plt.figure(figsize=(8,4))
-    plt.pcolormesh(t, freqs, power, shading='gouraud')
+    plt.pcolormesh(t, freqs, power, shading='gouraud') #Draws a heatmap: x = time, y = frequency, color = amplitude.
     plt.yscale('log')
     plt.xlabel("Time")
     plt.ylabel("Frequency [Hz]")
