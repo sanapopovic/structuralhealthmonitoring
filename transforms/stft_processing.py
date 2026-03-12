@@ -3,6 +3,7 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 import os
+from PyEMD import EMD
 
 
 
@@ -63,3 +64,5 @@ def plot_stft(f, t_seg, amplitude, downsampling=1, name="stft_plot", dB=False):
     plt.savefig(filepath, dpi=300)
     plt.close()
     print(f"Plot saved to {filepath}")
+
+
