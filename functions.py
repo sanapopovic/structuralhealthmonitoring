@@ -76,11 +76,12 @@ def plot_stft(f, t_seg, amplitude, downsampling=1, name="stft_plot", dB=False):
     # Plot
     plt.figure(figsize=(10, 4))
     plt.pcolormesh(t_plot, f, amplitude_plot, shading='gouraud')
-    plt.xlabel("Time [s]")
-    plt.ylabel("Frequency [Hz]")
+    plt.xlabel("Time [ms]")
+    plt.ylabel("Frequency [MHz]")
     plt.title(name)
     plt.colorbar(label='Amplitude (dB)' if dB else 'Amplitude')
     plt.tight_layout()
+    plt.ylim(2,3.5)
 
     # Save plot
     filepath = os.path.join(folder, f"{name}.png")
