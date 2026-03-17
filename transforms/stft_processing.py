@@ -30,7 +30,7 @@ def stft(sig, time, win_length =256, hop= 128):
         time = time.to_numpy()
 
     dt = np.mean(np.diff(time))
-    fs = 1.0 / dt
+    fs = (1.0 / dt)*(10**6)
     w = signal.windows.hann(win_length, sym= False)
 
 
