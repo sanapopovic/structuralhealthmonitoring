@@ -56,7 +56,14 @@ t_s = t * 10e-6
 dt = t_s[1] - t_s[0]
 fs = 1.0 / dt
 
-cg, t_arr, t_env, env = estimate_group_velocity(y, fs, L=0.2, fc=300e3)
+# Picked constraints
+
+L = 0.2
+fc = 300e3
+
+cg, t_arr, t_env, env = estimate_group_velocity(y, fs, L, fc)
+
+print(f"The estimated group velocity is {cg:.0f}")
 
 plt.figure()
 plt.plot(t_env * 1e6, env)          # convert seconds back to µs
@@ -64,7 +71,7 @@ plt.axvline(t_arr * 1e6, color="r", linestyle="--",
             label=f"Picked arrival ≈ {t_arr*1e6:.1f} µs")
 plt.xlabel("Time (µs)")
 plt.ylabel("Narrowband energy")
-#plt.title(f"Energy envelope around {fc/1e3:.0f} kHz")
+plt.title(f"Energy envelope around {fc/1e3:.0f} kHz")
 plt.legend()
 plt.grid(True)
 plt.show()
