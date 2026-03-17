@@ -118,7 +118,7 @@ def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
     """
     time_np = _to_numpy(time)
     sig_np  = _to_numpy(sig_in).astype(np.float64)
-    dt = np.mean(np.diff(time_np)); fs = 1.0 / dt
+    dt = np.mean(np.diff(time_np)); fs = (1.0 / dt)*(10**6)
     win_arr = signal.get_window(window, win_len)
 
     Tx, Sx, ssq_freqs, _ = ssq_stft(sig_np, window=win_arr,
@@ -134,7 +134,7 @@ def sst_complex(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None)
     """
     time_np = _to_numpy(time)
     sig_np  = _to_numpy(sig_in).astype(np.float64)
-    dt = np.mean(np.diff(time_np)); fs = 1.0 / dt
+    dt = np.mean(np.diff(time_np)); fs = (1.0 / dt)*(10**6)
     win_arr = signal.get_window(window, win_len)
 
     Tx, Sx, ssq_freqs, _ = ssq_stft(sig_np, window=win_arr, hop_len=hop_len,
