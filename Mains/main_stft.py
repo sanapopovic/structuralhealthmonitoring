@@ -22,5 +22,5 @@ preprocess.plot(t, y, 1, 'time_vs_volt')
 
 
 # ── STFT (original, from functions.py) ─────────────────────────────────────
-f, t_seg, amplitude, fs = stft_processing.stft(y, t)
-stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="STFT_Spectogram",dB=True)
+S, I, fs = stft_processing.stft(y, t)
+stft_processing.plot_stft(S, fs, hop=64, downsampling=1, name="STFT_Spectogram",dB=True)
