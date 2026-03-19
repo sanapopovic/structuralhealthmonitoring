@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from transforms import Hilbert_Huang_processing 
 
 
-data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+#data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+data = preprocess.get_data(r"Data/In-plane_TemporalResponse@7.9866MHzmm@200mm.csv")
 
 
 t = data["Propagation time (micsec)"].to_numpy()
@@ -36,13 +37,16 @@ plt.show()
 
 Hilbert_Huang_processing .plot_hilbert_spectrum(inst_freq, inst_amp, t)
 
-print(fs)
 
-Imf_r = Hilbert_Huang_processing.extract_imf_at_frequency(signal, fs= fs, freq=2600000, bandwidth=200000  )
+#Imf_r = Hilbert_Huang_processing.extract_imf_at_frequency(signal, fs= fs, freq=2600000, bandwidth=200000  ) #NOT HILBERT BUT BANDWIDTH FILTER
+Imf_r = Hilbert_Huang_processing.imf_extraction(imfs, inst_freq, 1300000, 200000)
+print("The amount of possible IMF's are:",len(Imf_r))
+Imf_r = Imf_r[0]
+
 
 plt.subplot(2, 1, 1)
-plt.plot(t, imfs[0])
-plt.title("IMF 1")
+plt.plot(t, signal)
+plt.title("Original")
 
 plt.subplot(2, 1, 2)
 plt.plot(t, Imf_r)

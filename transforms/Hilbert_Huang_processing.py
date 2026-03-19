@@ -116,9 +116,30 @@ def plot_hilbert_spectrum(inst_freq, inst_amp, t):
 
     plt.xlabel("Time (s)")
     plt.ylabel("Frequency (Hz)")
-    plt.ylim(1.5*(10**6), 3.5*(10**6))
+    #plt.ylim(1.5*(10**6), 3.5*(10**6))
     plt.title("Hilbert Time-Frequency Spectrum")
     plt.show()
+
+
+def imf_extraction(imfs, inst_freq, freq, bandwidth, smoothness = 0.1):
+
+    imf_p = []
+    
+
+    for i, imf in enumerate(imfs):
+        freq_mean = np.mean(inst_freq[i])
+        freq_std = np.std(inst_freq[i])
+
+        
+        # Criterion: low variation relative to mean
+        if np.abs(freq_std/freq_mean)  < np.array([smoothness]):
+            if (freq_mean >= freq - bandwidth/2) and (freq_mean <= freq + bandwidth/2):
+                imf_p.append(imf)
+
+    if len(imf_p) == 0:
+        raise ValueError("No sufficiently constant IMF was found inside the bandwidth")
+    else:           
+        return imf_p
 
 
 def extract_imf_at_frequency(signal, fs, freq, bandwidth=5, order=4):

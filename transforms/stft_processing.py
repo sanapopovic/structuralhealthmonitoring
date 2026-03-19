@@ -43,7 +43,7 @@ def stft(sig, time, win_length =256, hop= 128):
     else:
         I = 0
     
-    return S, I, fs
+    return S, I, fs 
 
 def plot_stft(S, fs, hop, downsampling=1, name="stft_plot", dB=False):
 

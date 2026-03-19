@@ -11,22 +11,23 @@ from transforms.wavelet_processing import wavelet_scalogram
 #All files should be uploaded as csv
 data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
 
-t = data["Propagation time (micsec)"]
-y = data["Sum Propagated signal (nm)"]
+t = data["Propagation time (micsec)"] #time axis in microseconds for this experiment
+y = data["Sum Propagated signal (nm)"] #measured signal, in nanometres
 
-preprocess.plot(t, y, 10, 'time_vs_volt')
-
-f, t_seg, amplitude, fs = stft_processing.stft(y, t)
-
-stft_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="spectrogram", dB=True)
-
-coeffs = wavelet_decompose(y, wavelet='db4', level=None)
+coeffs = wavelet_decompose(y, wavelet='db4', level=None) #Runs a multilevel Discrete Wavelet Transform on y using the Daubechies‑4 wavelet
 
 cD1 = coeffs[-1] #grab first detail level (finest scale)
 
-# simple time axis to match its length
+#simple time axis to match its length
 t_cD1 = np.linspace(t.iloc[0], t.iloc[-1], len(cD1))
+plt.figure(figsize=(8,4))
+plt.plot(t_cD1, cD1, linewidth=1)
+plt.xlabel("Time [µs]")
+plt.ylabel("Wavelet detail coefficient (level 1)")
+plt.title("wavelet_detail_L1")
+plt.savefig("plots/wavelet_detail_L1.png", dpi=300, bbox_inches='tight')
+plt.close()
 
-preprocess.plot(t_cD1, cD1, 1, 'wavelet_detail_L1')
 
-wavelet_scalogram(t, y, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet_scalogram")
+
+wavelet_scalogram(t, y, wavelet='cmor1.5-1.0', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
