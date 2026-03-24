@@ -94,7 +94,7 @@ def stft(sig_in, time, nperseg=256, noverlap=None, window='hann'):
 #  SST — Synchrosqueezed STFT  (equivalent to MATLAB fsst)
 # ─────────────────────────────────────────────────────────────
 
-def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
+def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None, n_fft = 512):
     """
     Synchrosqueezed Short-Time Fourier Transform.
     Equivalent to MATLAB:  [s, f, t] = fsst(x, fs, window)
@@ -122,13 +122,13 @@ def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
     win_arr = signal.get_window(window, win_len)
 
     Tx, Sx, ssq_freqs, _ = ssq_stft(sig_np, window=win_arr,
-                                      hop_len=hop_len, fs=fs, gamma=gamma)
+                                      hop_len=hop_len, fs=fs, gamma=gamma, n_fft= n_fft)
     n_frames = Tx.shape[1]
     t_seg = np.arange(n_frames) * hop_len / fs
     return ssq_freqs, t_seg, np.abs(Tx), np.abs(Sx), fs
 
 
-def sst_complex(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
+def sst_complex(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None, n_fft = 512):
     """
     Like sst() but returns raw complex Tx — needed before calling isst().
     """
@@ -138,7 +138,7 @@ def sst_complex(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None)
     win_arr = signal.get_window(window, win_len)
 
     Tx, Sx, ssq_freqs, _ = ssq_stft(sig_np, window=win_arr, hop_len=hop_len,
-                                      fs=fs, gamma=gamma, preserve_transform=True)
+                                      fs=fs, gamma=gamma, preserve_transform=True, n_fft= n_fft)
     n_frames = Tx.shape[1]
     t_seg = np.arange(n_frames) * hop_len / fs
     return ssq_freqs, t_seg, Tx, Sx, fs        # Tx and Sx are complex

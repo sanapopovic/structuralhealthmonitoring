@@ -1,93 +1,145 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import spectrogram
 from scipy.signal import hilbert
+from scipy.ndimage import gaussian_filter
+import matplotlib.pyplot as plt
 
-def wigner_ville_distribution(x):
-    x = np.asarray(x, dtype=complex)
-    if np.isrealobj(x):
-        x = hilbert(x)
+# -----------------------------
+# Utility: Analytic signal
+# -----------------------------
+def analytic_signal(x):
+    return hilbert(x)
 
+
+# -----------------------------
+# 1. Raw Wigner-Ville Distribution
+# -----------------------------
+def wvd(x):
+    x = analytic_signal(x)
     N = len(x)
     W = np.zeros((N, N), dtype=complex)
 
     for t in range(N):
-        for tau in range(-(N//2), N//2):  # exclude +N//2 to avoid collision
-            t1 = t + tau
-            t2 = t - tau
-            if 0 <= t1 < N and 0 <= t2 < N:
-                W[t, tau % N] = x[t1] * np.conj(x[t2])
+        for tau in range(-min(t, N-t-1), min(t, N-t-1)):
+            W[t, tau + N//2] = x[t + tau] * np.conj(x[t - tau])
 
-        W[t, :] = np.fft.fft(W[t, :])
-
-    W = np.fft.fftshift(W, axes=1)
+    # FFT over lag variable → frequency axis
+    W = np.fft.fftshift(np.fft.fft(W, axis=1), axes=1)
     return np.real(W)
 
-def plot_wvd(x, fs=1.0, title="Wigner-Ville Distribution", cmap="inferno", figsize=(10, 5)):
+
+# -----------------------------
+# 2. Smoothed Pseudo WVD (SPWVD)
+# -----------------------------
+def spwvd(x, time_sigma=2, freq_sigma=2):
+    W = wvd(x)
+
+    # Smooth in time and frequency
+    W_smooth = gaussian_filter(W, sigma=[time_sigma, freq_sigma])
+    return W_smooth
+
+
+# -----------------------------
+# 3. Choi-Williams Kernel
+# -----------------------------
+def choi_williams_kernel(N, sigma=1.0):
+    t = np.linspace(-1, 1, N)
+    f = np.linspace(-1, 1, N)
+    T, F = np.meshgrid(t, f, indexing='ij')
+
+    # Choi-Williams kernel
+    kernel = np.exp(-(T**2 * F**2) / sigma)
+    return kernel
+
+
+def wvd_choi_williams(x, sigma=1.0):
+    W = wvd(x)
+    N = W.shape[0]
+
+    kernel = choi_williams_kernel(N, sigma)
+    return np.real(np.fft.ifft2(np.fft.fft2(W) * np.fft.fft2(kernel)))
+
+
+# -----------------------------
+# 4. Gaussian Kernel (Cohen's Class)
+# -----------------------------
+def gaussian_kernel(N, sigma_t=0.2, sigma_f=0.2):
+    t = np.linspace(-1, 1, N)
+    f = np.linspace(-1, 1, N)
+    T, F = np.meshgrid(t, f, indexing='ij')
+
+    kernel = np.exp(-(T**2 / sigma_t**2 + F**2 / sigma_f**2))
+    return kernel
+
+
+def wvd_gaussian(x, sigma_t=0.2, sigma_f=0.2):
+    W = wvd(x)
+    N = W.shape[0]
+
+    kernel = gaussian_kernel(N, sigma_t, sigma_f)
+    return np.real(np.fft.ifft2(np.fft.fft2(W) * np.fft.fft2(kernel)))
+
+
+# -----------------------------
+# Example Signal
+# -----------------------------
+def test_signal(N=256):
+    t = np.linspace(0, 1, N)
+    x = np.sin(2 * np.pi * 30 * t) + np.sin(2 * np.pi * (60 * t + 20 * t**2))
+    return t, x
+
+
+# -----------------------------
+# Visualization
+# -----------------------------
+def plot_tfr(W, title, fs=1.0):
     """
-    Plot the Wigner-Ville Distribution of a signal.
-
-    Parameters:
-        x       : input signal (real or complex)
-        fs      : sampling frequency in Hz (default 1.0)
-        title   : plot title
-        cmap    : matplotlib colormap (default 'inferno')
-        figsize : figure size tuple
+    W: time-frequency matrix (time x frequency)
+    fs: sampling frequency (used to scale frequency axis)
     """
-    W = wigner_ville_distribution(x)
-    N = len(x)
-    t = np.arange(N) / fs
-    f = np.fft.fftshift(np.fft.fftfreq(N, d=1/fs))
 
-    fig, axes = plt.subplots(1, 2, figsize=figsize)
+    N = W.shape[0]
 
-    # Left: full WVD including negative frequencies
-    im = axes[0].imshow(
-        W.T, aspect='auto', origin='lower', cmap=cmap,
-        extent=[t[0], t[-1], f[0], f[-1]]
-    )
-    axes[0].set_title(title)
-    axes[0].set_xlabel("Time (s)")
-    axes[0].set_ylabel("Frequency (Hz)")
-    plt.colorbar(im, ax=axes[0], label="Amplitude")
+    # Frequency axis (normalized or physical)
+    freqs = np.linspace(-fs/2, fs/2, N)
 
-    # Right: positive frequencies only (cleaner for real signals)
-    pos = f >= 0
-    im2 = axes[1].imshow(
-        W.T[pos], aspect='auto', origin='lower', cmap=cmap,
-        extent=[t[0], t[-1], 0, f[-1]]
-    )
-    axes[1].set_title(f"{title} (positive freq)")
-    axes[1].set_xlabel("Time (s)")
-    axes[1].set_ylabel("Frequency (Hz)")
-    plt.colorbar(im2, ax=axes[1], label="Amplitude")
-
-    plt.tight_layout()
-    plt.show()
-
-def plot_spectrogram(x, fs, use_db=True):
-    """
-    Plot spectrogram of a signal.
-
-    Parameters:
-        x (np.ndarray): input signal
-        fs (float): sampling frequency
-        use_db (bool): if True, plot in dB scale
-    """
-    f, t, Sxx = spectrogram(x, fs=fs, nperseg=128, noverlap=64)
-
-    # Convert to dB if requested
-    if use_db:
-        Sxx_plot = 10 * np.log10(Sxx + 1e-10)  # avoid log(0)
-        label = 'Power (dB)'
-    else:
-        Sxx_plot = Sxx
-        label = 'Power'
+    # Time axis
+    times = np.arange(N)
 
     plt.figure()
-    plt.pcolormesh(t, f, Sxx_plot, shading='gouraud')
-    plt.ylabel('Frequency [Hz]')
-    plt.xlabel('Time [s]')
-    plt.title('Spectrogram (STFT)')
-    plt.colorbar(label=label)
+
+    # Transpose so freq is vertical axis
+    plt.imshow(
+        W.T,
+        extent=[times[0], times[-1], freqs[0], freqs[-1]],
+        aspect='auto',
+        origin='lower',
+        cmap='jet'
+    )
+
+    plt.title(title)
+    plt.xlabel("Time")
+    plt.ylabel("Frequency")
+
+    plt.colorbar()
+
+    # Optional: fix frequency limits (remove autoscaling)
+    #plt.ylim(0, fs/2)   # show only positive frequencies
+
     plt.show()
+
+
+# -----------------------------
+# Run Demo
+# -----------------------------
+if __name__ == "__main__":
+    t, x = test_signal()
+
+    W_raw = wvd(x)
+    W_sp = spwvd(x, 0.5, 0.5)
+    W_cw = wvd_choi_williams(x, sigma=0.5)
+    W_gauss = wvd_gaussian(x, sigma_t=0.9, sigma_f=0.9)
+
+    plot_tfr(W_raw, "Raw Wigner-Ville")
+    plot_tfr(W_sp, "Smoothed Pseudo WVD")
+    plot_tfr(W_cw, "Choi-Williams")
+    plot_tfr(W_gauss, "Gaussian Kernel WVD")

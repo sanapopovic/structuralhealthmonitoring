@@ -16,8 +16,12 @@ signal = data["Sum Propagated signal (nm)"].to_numpy()
 dt = np.mean(np.diff(t))
 fs = (1.0 / dt)*(10**6)
 
-#W = Wigner_Ville.wigner_ville_distribution(signal)
+W_raw = Wigner_Ville.wvd(signal)
+W_sp = Wigner_Ville.spwvd(signal, 2, 2)
+W_cw = Wigner_Ville.wvd_choi_williams(signal, sigma=0.5)
+W_gauss = Wigner_Ville.wvd_gaussian(signal, sigma_t=0.3, sigma_f=0.3)
 
-# Plot results
-#Wigner_Ville.plot_wvd(signal, fs=fs)
-Wigner_Ville.plot_spectrogram(signal, fs, use_db=True)
+Wigner_Ville.plot_tfr(W_raw, "Raw Wigner-Ville", fs=fs)
+Wigner_Ville.plot_tfr(W_sp, "Smoothed Pseudo WVD", fs=fs)
+Wigner_Ville.plot_tfr(W_cw, "Choi-Williams", fs=fs)
+Wigner_Ville.plot_tfr(W_gauss, "Gaussian Kernel WVD", fs=fs)

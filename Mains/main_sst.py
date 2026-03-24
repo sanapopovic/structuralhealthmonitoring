@@ -15,6 +15,9 @@ data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm
 t = data["Propagation time (micsec)"]
 y = data["Sum Propagated signal (nm)"]
 
+win_len = 1024#512
+hop_len = 128#64
+n_fft = 1024#512 #Has to be bigger than win_len
 
 # ── Raw signal plot ─────────────────────────────────────────────────────────
 preprocess.plot(t, y, 1, 'time_vs_volt')
@@ -26,14 +29,14 @@ sst_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram_
 
 
 # ── SST — sharpened version of the STFT above ──────────────────────────────
-f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst_processing.sst(y, t, win_len=128, hop_len=64)
-sst_processing.plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram_v1", dB=True)
+f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst_processing.sst(y, t, win_len=win_len, hop_len=hop_len, n_fft= n_fft)
+sst_processing.plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram_v1", dB=False)
 
 # ── 3D SST plot ─────────────────────────────────────────────────────────────
 sst_processing.plot_sst_3d(t_sst, f_sst, Tx_amp, name="SST_3D_v1", downsampling=5, dB=True, elev=50, azim=-40, cmap = 'viridis', smooth=True, freq_min=2, freq_max=3.5)
 
 # ── Inverse SST — reconstruct signal and compare ───────────────────────────
-_, _, Tx_c, _, _ = sst_processing.sst_complex(y, t, win_len=128, hop_len=64)
+_, _, Tx_c, _, _ = sst_processing.sst_complex(y,t, win_len= win_len, hop_len= hop_len, n_fft= n_fft)
 
 
 # Zero out all frequencies outside 2–2.8 MHz
@@ -42,7 +45,7 @@ mask = (f_sst_np >= 2) & (f_sst_np <= 2.8)
 Tx_filtered = Tx_c.copy()
 Tx_filtered[~mask, :] = 0   # kill everything outside the band
 
-x_rec = sst_processing.isst(Tx_c, win_len=256, hop_len=1)
+x_rec = sst_processing.isst(Tx_c, win_len=n_fft, hop_len=1)
 
 
 t_np = t.to_numpy()
