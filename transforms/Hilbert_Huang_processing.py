@@ -101,7 +101,7 @@ def hilbert_analysis(imfs, fs):
 
 
 
-def plot_hilbert_spectrum(inst_freq, inst_amp, t):
+def plot_hilbert_spectrum_cloud(inst_freq, inst_amp, t):
 
     plt.figure(figsize=(10,6))
 
@@ -182,4 +182,58 @@ def extract_imf_at_frequency(signal, fs, freq, bandwidth=5, order=4):
     
     return imf
 
+def plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, f_bins=300, t_bins=300):
+    """
+    Plot a true Hilbert spectrum (time-frequency energy density map).
+    
+    Parameters
+    ----------
+    inst_freq : list of arrays
+        Instantaneous frequencies per IMF
+    inst_amp : list of arrays
+        Instantaneous amplitudes per IMF
+    t : array
+        Time vector (original signal time axis)
+    fs : float
+        Sampling frequency
+    f_bins : int
+        Number of frequency bins
+    t_bins : int
+        Number of time bins
+    """
 
+    # Flatten all IMFs into single arrays
+    all_t = []
+    all_f = []
+    all_w = []
+
+    for f, a in zip(inst_freq, inst_amp):
+        all_t.append(t[:-1])
+        all_f.append(f)
+        all_w.append(a)
+
+    all_t = np.concatenate(all_t)
+    all_f = np.concatenate(all_f)
+    all_w = np.concatenate(all_w)
+
+    # Define frequency range
+    f_min, f_max = np.min(all_f), np.max(all_f)
+
+    # 2D histogram weighted by amplitude (energy proxy)
+    H, t_edges, f_edges = np.histogram2d(
+        all_t,
+        all_f,
+        bins=[t_bins, f_bins],
+        weights=all_w
+    )
+
+    T, F = np.meshgrid(t_edges[:-1], f_edges[:-1], indexing="ij")
+
+    plt.figure(figsize=(10, 6))
+    plt.pcolormesh(T, F, H, shading="auto", cmap="viridis")
+
+    plt.xlabel("Time (s)")
+    plt.ylabel("Frequency (Hz)")
+    plt.title("Hilbert Spectrum (Time-Frequency Energy Density)")
+    plt.colorbar(label="Amplitude (energy proxy)")
+    plt.show()

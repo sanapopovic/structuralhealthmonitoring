@@ -14,6 +14,8 @@ data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm
 t = data["Propagation time (micsec)"].to_numpy()
 signal = data["Sum Propagated signal (nm)"].to_numpy()
 
+signal = preprocess.noise(signal, 0.005)
+
 dt = np.mean(np.diff(t))
 fs = (1.0 / dt)*(10**6)
 
@@ -35,11 +37,11 @@ for i, imf in enumerate(imfs):
 plt.tight_layout()
 plt.show()
 
-Hilbert_Huang_processing .plot_hilbert_spectrum(inst_freq, inst_amp, t)
+Hilbert_Huang_processing .plot_hilbert_spectrum(inst_freq, inst_amp, t, fs)
 print(fs)
 
 #Imf_r = Hilbert_Huang_processing.extract_imf_at_frequency(signal, fs= fs, freq=2600000, bandwidth=200000  ) #NOT HILBERT BUT BANDWIDTH FILTER
-Imf_r = Hilbert_Huang_processing.imf_extraction(imfs, inst_freq, 1300000, 200000)
+Imf_r = Hilbert_Huang_processing.imf_extraction(imfs, inst_freq, 2600000, 200000)
 print("The amount of possible IMF's are:",len(Imf_r))
 Imf_r = Imf_r[0]
 
