@@ -4,37 +4,57 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import preprocess
+import random
 from transforms import stft_processing 
 from transforms import sst_processing 
 
+def noise(signal, NSR = 0.02):
+    max = np.max(signal)*NSR #standard deviation
+    Noise = np.random.normal(0, max, size=signal.shape)
+    signal = signal + Noise
+    return signal
 
 # ── Load real data ──────────────────────────────────────────────────────────
-data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+#data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+data = preprocess.get_data(r"Data/Out-of-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
 
 
 t = data["Propagation time (micsec)"]
 y = data["Sum Propagated signal (nm)"]
+y =y.to_numpy()
+y =noise(y, 0.02)
 
+win_len = 1024#512
+hop_len = 128#64
+n_fft = 1024#512 #Has to be bigger than win_len
 
 # ── Raw signal plot ─────────────────────────────────────────────────────────
-preprocess.plot(t, y, 1, 'time_vs_volt')
+preprocess.plot(t, y, 1, 'noise_signal')
 
 
 # ── STFT (original, from functions.py) ─────────────────────────────────────
 f, t_seg, amplitude, fs = sst_processing.stft(y, t)
-sst_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram_version_sst_v1",dB=True)
+sst_processing.plot_stft(f, t_seg, amplitude, downsampling=1, name="Spectrogram_version_sst_v2",dB=True)
 
 
 # ── SST — sharpened version of the STFT above ──────────────────────────────
-f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst_processing.sst(y, t, win_len=256, hop_len=1)
-sst_processing.plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram_v1", dB=True)
+f_sst, t_sst, Tx_amp, Sx_amp, fs_sst = sst_processing.sst(y, t, win_len=win_len, hop_len=hop_len, n_fft= n_fft)
+sst_processing.plot_sst(f_sst, t_sst, Tx_amp, name="SST_Spectrogram_v1", dB=False)
 
 # ── 3D SST plot ─────────────────────────────────────────────────────────────
-sst_processing.plot_sst_3d(t_sst, f_sst, Tx_amp, name="SST_3D_v1", dB=True, downsampling=1) #freq_min=2, freq_max=3.5
+sst_processing.plot_sst_3d(t_sst, f_sst, Tx_amp, name="SST_3D_v1", downsampling=5, dB=True, elev=50, azim=-40, cmap = 'viridis', smooth=True, freq_min=2, freq_max=3.5)
 
 # ── Inverse SST — reconstruct signal and compare ───────────────────────────
-_, _, Tx_c, _, _ = sst_processing.sst_complex(y, t, win_len=256, hop_len=1)
-x_rec = sst_processing.isst(Tx_c, win_len=256, hop_len=1)
+_, _, Tx_c, _, _ = sst_processing.sst_complex(y,t, win_len= win_len, hop_len= hop_len, n_fft= n_fft)
+
+
+# Zero out all frequencies outside 2–2.8 MHz
+f_sst_np = sst_processing._to_numpy(f_sst)
+mask = (f_sst_np >= 2) & (f_sst_np <= 2.8)
+Tx_filtered = Tx_c.copy()
+Tx_filtered[~mask, :] = 0   # kill everything outside the band
+
+x_rec = sst_processing.isst(Tx_c, win_len=n_fft, hop_len=1)
 
 
 t_np = t.to_numpy()

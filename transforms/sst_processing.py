@@ -94,7 +94,7 @@ def stft(sig_in, time, nperseg=256, noverlap=None, window='hann'):
 #  SST — Synchrosqueezed STFT  (equivalent to MATLAB fsst)
 # ─────────────────────────────────────────────────────────────
 
-def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
+def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None, n_fft = 512):
     """
     Synchrosqueezed Short-Time Fourier Transform.
     Equivalent to MATLAB:  [s, f, t] = fsst(x, fs, window)
@@ -118,27 +118,27 @@ def sst(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
     """
     time_np = _to_numpy(time)
     sig_np  = _to_numpy(sig_in).astype(np.float64)
-    dt = np.mean(np.diff(time_np)); fs = 1.0 / dt
+    dt = np.mean(np.diff(time_np)); fs = (1.0 / dt)*(10**6)
     win_arr = signal.get_window(window, win_len)
 
     Tx, Sx, ssq_freqs, _ = ssq_stft(sig_np, window=win_arr,
-                                      hop_len=hop_len, fs=fs, gamma=gamma)
+                                      hop_len=hop_len, fs=fs, gamma=gamma, n_fft= n_fft)
     n_frames = Tx.shape[1]
     t_seg = np.arange(n_frames) * hop_len / fs
     return ssq_freqs, t_seg, np.abs(Tx), np.abs(Sx), fs
 
 
-def sst_complex(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None):
+def sst_complex(sig_in, time, win_len=256, hop_len=1, window='hann', gamma=None, n_fft = 512):
     """
     Like sst() but returns raw complex Tx — needed before calling isst().
     """
     time_np = _to_numpy(time)
     sig_np  = _to_numpy(sig_in).astype(np.float64)
-    dt = np.mean(np.diff(time_np)); fs = 1.0 / dt
+    dt = np.mean(np.diff(time_np)); fs = (1.0 / dt)*(10**6)
     win_arr = signal.get_window(window, win_len)
 
     Tx, Sx, ssq_freqs, _ = ssq_stft(sig_np, window=win_arr, hop_len=hop_len,
-                                      fs=fs, gamma=gamma, preserve_transform=True)
+                                      fs=fs, gamma=gamma, preserve_transform=True, n_fft= n_fft)
     n_frames = Tx.shape[1]
     t_seg = np.arange(n_frames) * hop_len / fs
     return ssq_freqs, t_seg, Tx, Sx, fs        # Tx and Sx are complex
@@ -162,8 +162,8 @@ def isst(Tx, win_len=256, hop_len=1, window='hann'):
     x_rec = issq_stft(Tx, window=win_arr, hop_len=hop_len)
     return np.real(x_rec)
 
-def plot_sst_3d( t_seg, f, amplitude, downsampling=1, name="sst_3d", dB=False,
-                freq_min=None, freq_max=None, elev=30, azim=-60):
+def plot_sst_3d( t_seg, f, amplitude, downsampling=8, name="sst_3d", dB=False,
+                freq_min=None, freq_max=None, elev=30, azim=-60, cmap='viridis', smooth=True):
     """
     3-D surface plot of an SST or STFT amplitude matrix.
 
@@ -207,8 +207,10 @@ def plot_sst_3d( t_seg, f, amplitude, downsampling=1, name="sst_3d", dB=False,
 
     fig = plt.figure(figsize=(12, 6))
     ax  = fig.add_subplot(111, projection='3d')
+    ax.set_box_aspect((3,1,1)) # wider aspect ratio for better visibility
 
-    surf = ax.plot_surface(T, F, amp, cmap='turbo', linewidth=0, antialiased=False)
+
+    surf = ax.plot_surface(T, F, amp, cmap='viridis', linewidth=0, antialiased=False)
 
     ax.set_xlabel("Time [ms]")
     ax.set_ylabel("Frequency [MHz]")
