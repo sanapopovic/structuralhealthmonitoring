@@ -4,23 +4,32 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import preprocess
+import random
 from transforms import stft_processing 
 from transforms import sst_processing 
 
+def noise(signal, NSR = 0.02):
+    max = np.max(signal)*NSR #standard deviation
+    Noise = np.random.normal(0, max, size=signal.shape)
+    signal = signal + Noise
+    return signal
 
 # ── Load real data ──────────────────────────────────────────────────────────
-data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+#data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+data = preprocess.get_data(r"Data/Out-of-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
 
 
 t = data["Propagation time (micsec)"]
 y = data["Sum Propagated signal (nm)"]
+y =y.to_numpy()
+y =noise(y, 0.02)
 
 win_len = 1024#512
 hop_len = 128#64
 n_fft = 1024#512 #Has to be bigger than win_len
 
 # ── Raw signal plot ─────────────────────────────────────────────────────────
-preprocess.plot(t, y, 1, 'time_vs_volt')
+preprocess.plot(t, y, 1, 'noise_signal')
 
 
 # ── STFT (original, from functions.py) ─────────────────────────────────────

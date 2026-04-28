@@ -3,15 +3,13 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 import os
+import random
 
 def get_data(file):
    
     # Read CSV
-    data = pd.read_csv(file)
-    
-    for col in data:
-        data[col] = data[col].str.replace(',', '.')   
-    data = data.astype(float)
+    data = pd.read_excel(file)
+
     
     return data
 
@@ -49,6 +47,22 @@ def plot(x, y, downsampling=1, name="plot"):
     plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Plot saved to {filepath}")
+
+
+def noise(signal, snr_db = 20):
+    
+
+    signal = np.asarray(signal)
+
+    signal_power = np.mean(signal**2)   
+    snr_linear = 10**(snr_db / 10)
+    
+    noise_power = signal_power / snr_linear
+
+    noise = np.random.normal(0, np.sqrt(noise_power), signal.shape)
+    noisy_signal = signal + noise
+
+    return noisy_signal
 
 
 

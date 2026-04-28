@@ -142,7 +142,7 @@ def imf_extraction(imfs, inst_freq, freq, bandwidth, smoothness = 0.1):
         return imf_p
 
 
-def extract_imf_at_frequency(signal, fs, freq, bandwidth=5, order=4):
+def Bandpass(signal, fs, freq, bandwidth=5, order=4):
     """
     Extract an IMF from a signal at a specified frequency using a band-pass filter.
     

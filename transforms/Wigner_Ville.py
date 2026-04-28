@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     W_raw = wvd(x)
     W_sp = spwvd(x, 0.5, 0.5)
-    W_cw = wvd_choi_williams(x, sigma=0.5)
+    W_cw = wvd_choi_williams(x, sigma=0.9)
     W_gauss = wvd_gaussian(x, sigma_t=0.9, sigma_f=0.9)
 
     plot_tfr(W_raw, "Raw Wigner-Ville")
