@@ -237,3 +237,43 @@ def plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, f_bins=300, t_bins=300):
     plt.title("Hilbert Spectrum (Time-Frequency Energy Density)")
     plt.colorbar(label="Amplitude (energy proxy)")
     plt.show()
+
+def reconstruction(inst_amp, inst_freq, fs, fmin, fmax):
+    n = len(inst_amp[0]) + 1  # restore original length
+    band_signal = np.zeros(n)
+
+    for amp, freq in zip(inst_amp, inst_freq):
+
+        # Mask
+        mask = (freq >= fmin) & (freq <= fmax)
+        filtered_freq = freq * mask
+
+        # Integrate phase (length N-1)
+        phase = np.cumsum(filtered_freq) * (2 * np.pi / fs)
+
+        # Pad phase and amplitude to length N
+        phase = np.insert(phase, 0, phase[0])
+        amp_full = np.insert(amp, 0, amp[0])
+
+        band_signal += amp_full * np.cos(phase)
+
+    return band_signal
+
+def bandpass_hilbert(imfs, fs, fmin, fmax):
+    band_signal = 0
+
+    for imf in imfs:
+        analytic = hilbert(imf)
+
+        phase = np.unwrap(np.angle(analytic))
+        inst_freq = np.diff(phase) * fs / (2*np.pi)
+        inst_freq = np.concatenate(([inst_freq[0]], inst_freq))
+
+        mask = (inst_freq >= fmin) & (inst_freq <= fmax)
+
+        # Apply mask directly to analytic signal
+        filtered = analytic * mask
+
+        band_signal += np.real(filtered)
+
+    return band_signal
