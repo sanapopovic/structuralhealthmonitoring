@@ -6,11 +6,8 @@ import os
 import random
 
 def get_data(file):
-   
-    # Read CSV
     data = pd.read_excel(file)
-
-    
+    data.columns = data.columns.str.strip()
     return data
 
 def plot(x, y, downsampling=1, name="plot"):
@@ -65,4 +62,52 @@ def noise(signal, snr_db = 20):
     return noisy_signal
 
 
+def pad_to_length(x, target_len):
+    x = np.asarray(x)
+    if len(x) < target_len:
+        return np.pad(x, (0, target_len - len(x)), mode='constant')
+    return x
+
+
+def create_signal(base_harmonic, second_harmonic, beta, noise_level,
+                  base_mode, second_mode, modes_base, modes_harmonic):
+
+    # Max amplitudes
+    A1 = np.max(base_harmonic[base_mode].to_numpy())
+    A2 = np.max(second_harmonic[second_mode].to_numpy())
+
+    A2_target = beta * (A1 ** 2)
+    second_scale = A2_target / A2
+
+    # ---- lengths ----
+    base_len = len(base_harmonic["Sum Propagated signal (nm)"].to_numpy())
+    second_len = len(second_harmonic[second_mode].to_numpy())
+    max_len = max(base_len, second_len)
+
+    # ---- choose correct time array (LONGEST one) ----
+    if base_len >= second_len:
+        time = base_harmonic["Propagation time (micsec)"].to_numpy()
+    else:
+        time = second_harmonic["Propagation time (micsec)"].to_numpy()
+
+    # Initialize signal
+    signal = np.zeros(max_len)
+
+    # Base modes
+    for mode in modes_base:
+        sig = base_harmonic[mode].to_numpy()
+        signal += pad_to_length(sig, max_len)
+
+    # Harmonic modes
+    for mode in modes_harmonic:
+        sig = second_harmonic[mode].to_numpy()
+        signal += second_scale * pad_to_length(sig, max_len)
+
+    # Noise
+    level = noise_level * A2 * second_scale
+    noise = np.random.normal(0, level, max_len)
+
+    noisy_signal = signal + noise
+
+    return time, noisy_signal, second_scale*second_harmonic
 
