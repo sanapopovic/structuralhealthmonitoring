@@ -7,7 +7,9 @@ from vmdpy import VMD
 
 data = get_data(r"Data\In-plane_A2_TemporalResponse@15.963MHzmm@200mm.xlsx")
 
-print(data)
+time = data.iloc[:,0] 
+t = time.to_numpy() #Numpy array of time in microsec
+print(t)
 
 
 """
