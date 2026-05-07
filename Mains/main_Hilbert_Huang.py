@@ -26,8 +26,11 @@ time_stamp200 = {"S1": 68.4808,  "S2": 76.5127, "A4": 91.8515  , "S4": 64.9935, 
 time_stamp250 = {"S1":119.841, "S2": 133.897}
 
 
-t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, 10, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, 0, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
 
+
+#t = data_base["Propagation time (micsec)"]
+#signal = data_base["Sum Propagated signal (nm)"]
 #signal = preprocess.noise(signal, 20)
 
 
@@ -35,6 +38,7 @@ dt = np.mean(np.diff(t))
 fs = (1.0 / dt)*(10**6)
 
 imfs, residue = Hilbert_Huang_processing .emd(signal)
+print(len(imfs))
 
 inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
 
@@ -52,13 +56,13 @@ for i, imf in enumerate(imfs):
 plt.tight_layout()
 plt.show()
 
-Hilbert_Huang_processing .plot_hilbert_spectrum(inst_freq, inst_amp, t, fs)
+fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs)
 
 
 #Imf_r = Hilbert_Huang_processing.Bandpass(signal, fs= fs, freq=2600000, bandwidth=200000  ) # BANDWIDTH FILTER
 #Imf_r = Hilbert_Huang_processing.reconstruction(inst_amp, inst_freq, fs, 2400000,2800000)
-Imf_r = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, 2300000,2900000)
-#Imf_r = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, 1100000, 1500000)
+#Imf_r = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, 2300000,2900000)
+Imf_r = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, 1100000, 1500000)
 #Imf_a = Hilbert_Huang_processing.imf_extraction(imfs, inst_freq, 2600000, 200000)
 #print("The amount of possible IMF's are:",len(Imf_r))
 #Imf_a = Imf_a[0]
@@ -66,13 +70,13 @@ Imf_r = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, 2300000,2900000)
 upper_env, lower_env, mean_env = d.sift(Imf_r)
 
 #result = d.align_to_envelope_with_time(mean_env, t , time_stamp200)
-#result = d.peak_time(mean_env, t, time_stamp200)
+result = d.peak_time(mean_env, t, time_stamp200)
 
 #decomposed = d.Hann_decomp(result, 'Hann', L = 10, threshold=0.1)
 
 
 
-#print(decomposed)
+print(result['S1'])
 
 s0 = data_harmonic["S0 Propagated signal (nm)"].to_numpy()
 a0 = data_harmonic["A2 Propagated signal (nm)"].to_numpy()
@@ -94,13 +98,3 @@ plt.title("Filtered IMF")
 plt.tight_layout()
 plt.show()
 
-plt.plot(t, Imf_r)
-#plt.plot(t, s0)
-#plt.plot(t, s1)
-#plt.plot(t, a4)
-#plt.plot(t, s2)
-plt.plot(t, s4)
-#plt.plot(t, a0)
-#plt.plot(t, s5)
-plt.plot(t, mean_env)
-plt.show()

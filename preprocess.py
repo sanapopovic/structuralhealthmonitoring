@@ -64,9 +64,19 @@ def noise(signal, snr_db = 20):
 
 def pad_to_length(x, target_len):
     x = np.asarray(x)
-    if len(x) < target_len:
-        return np.pad(x, (0, target_len - len(x)), mode='constant')
-    return x
+
+    n = len(x)
+
+    if n >= target_len:
+        return x
+
+    # Original sample positions
+    old_pos = np.arange(n)
+
+    # New positions with extra intermediate points
+    new_pos = np.linspace(0, n - 1, target_len)
+
+    return np.interp(new_pos, old_pos, x)
 
 
 def create_signal(base_harmonic, second_harmonic, beta, noise_level,
