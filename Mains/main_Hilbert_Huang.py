@@ -26,7 +26,7 @@ time_stamp200 = {"S1": 68.4808,  "S2": 76.5127, "A4": 91.8515  , "S4": 64.9935, 
 time_stamp250 = {"S1":119.841, "S2": 133.897}
 
 
-t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, 0, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, 4, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
 
 
 #t = data_base["Propagation time (micsec)"]
