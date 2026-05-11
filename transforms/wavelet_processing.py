@@ -32,3 +32,4 @@ def wavelet_scalogram(t, sig, wavelet = 'cgau2', n_scales=100, name="wavelet_sca
     plt.savefig(filepath, dpi=300)
     plt.close()
     print(f"Plot saved to {filepath}")
+    return t, freqs, power
