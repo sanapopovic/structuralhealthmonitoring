@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from ssqueezepy import cwt, icwt, Wavelet
+from ssqueezepy import cwt, icwt
+from ssqueezepy.experimental import scale_to_freq
 
 
 
@@ -34,16 +35,7 @@ def wavelet_scalogram_OG(t, sig, wavelet = 'cgau2', n_scales=100, name="wavelet_
     plt.close() 
     print(f"Plot saved to {filepath}")
 
-def wavelet_scalogram(
-        
-    t_us,                      # time in microseconds
-    sig,
-    wavelet='cgau2',
-    fmin_mhz=1.0e6,
-    fmax_mhz=4.5e6,
-    n_freqs=600,
-    name="wavelet_scalogram"
-):
+def wavelet_scalogram(t_us,sig,wavelet='cgau2',fmin_mhz=1.0e6,fmax_mhz=4.5e6,n_freqs=600,name="wavelet_scalogram"):
 
 
     #fmin_mhz and fmax_mhz is in Hz not MHz
@@ -134,72 +126,47 @@ def wavelet_scalogram(
     plt.close()
 
     print(f"Plot saved to {filepath}")
-<<<<<<< HEAD
     return t, freqs, power
-=======
+
+
+
+
 
 def reconstruct_frequency_band(
     t_us,
-    sig,
+    signal,
     band_min,
     band_max,
-    wavelet='cmor3.0-1.0',
-    fmin=1e6,
-    fmax=4.5e6,
-    n_freqs=300
+    wavelet,
+    fmin,
+    fmax,
+    n_freqs
 ):
     """
-    CWT band reconstruction with amplitude preservation (no normalization).
+    Reconstruct a frequency band from a signal using CWT.
+
+    Time vector t is in microseconds (µs).
     """
 
-    # -----------------------------
-    # Convert inputs
-    # -----------------------------
-    sig = np.asarray(sig).squeeze()
-    t = np.asarray(t_us).squeeze() * 1e-6  # µs → s
-
+    sig = np.asarray(signal).squeeze()
+    t = np.asarray(t_us).squeeze()*1e-6
     dt = np.mean(np.diff(t))
 
-    # -----------------------------
-    # Frequency grid (Hz)
-    # -----------------------------
     freqs_target = np.linspace(fmin, fmax, n_freqs)
 
-    # -----------------------------
-    # Scale conversion
-    # -----------------------------
     fc = pywt.central_frequency(wavelet)
-    scales = fc / (freqs_target * dt)
+    scales = fc/(freqs_target*dt)
 
-    # -----------------------------
-    # CWT
-    # -----------------------------
-    cwtmatr, freqs = pywt.cwt(
-        sig,
-        scales,
-        wavelet,
-        sampling_period=dt
-    )
+    cwtmatr, freqs = pywt.cwt(sig, scales, wavelet, sampling_period=dt)
 
-    # -----------------------------
-    # Band selection
-    # -----------------------------
     mask = (freqs >= band_min) & (freqs <= band_max)
 
-    cwt_band = cwtmatr[mask, :]
+    cwt_band = cwtmatr[mask,:]
     scales_band = scales[mask]
 
-    # -----------------------------
-    # Amplitude-preserving reconstruction
-    # -----------------------------
-    reconstructed =np.real( np.sum(
-    cwt_band / (scales_band[:, None]**2),
-    axis=0))
+    # Empirical amplitude-correct reconstruction
+    reconstructed_signal = np.real(np.sum(cwt_band/(scales_band[:,None]**2),axis=0))
 
+    reconstructed_signal *= np.mean(np.diff(np.log(scales_band)))
 
-    reconstructed *= np.mean(np.diff(np.log(scales_band)))
-
-    return reconstructed
-
-
->>>>>>> a5a65b441ae3c366d1d74c339f8969c613bf0b40
+    return reconstructed_signal

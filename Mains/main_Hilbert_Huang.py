@@ -37,7 +37,7 @@ modes_base = ["S0 Propagated signal (nm)", "S1 Propagated signal (nm)", "S2 Prop
 time_stamp_harmonic = {"S1": 68.4808,  "S2": 76.5127, "A4": 91.8515  , "S4": 64.9935, "A2": 71.7798, "S0": 70.7973, "A0": 70.7951}
 time_stamp_base = {"S1": 68.4808,  "S2": 76.5127, "A4": 91.8515  , "S4": 64.9935, "A2": 71.7798, "S0": 70.7973, "A0": 70.7951}
 
-noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
+noise_level = 1.5 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
 beta = 6
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
@@ -108,6 +108,7 @@ fig, ax = plt.subplots(2, 1)
 ax[0].plot(t, Recon_base_H)
 ax[0].set_title("Base Reconstruction")
 
+
 ax[1].plot(t, Recon_harmonic_H)
 ax[1].set_title("Harmonic Reconstruction")
 
@@ -115,6 +116,9 @@ plt.tight_layout()
 plt.show()
 
 
+imfs, residue = Hilbert_Huang_processing .emd(Recon_harmonic_H)
+inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
+fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name)
 
 
 

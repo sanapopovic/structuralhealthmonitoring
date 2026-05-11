@@ -141,13 +141,18 @@ def The_Function(noise_start, noise_level_step,noise_stop, beta_start, beta_step
                 upper_env, lower_env, mean_env = d.sift(Recon_base_H)
                 result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
                 result_base_H["scale"] = second_scale
+                result_base_H["reconstruction"] = Recon_base_H
+                result_base_H["t"] = t
 
                 upper_env, lower_env, mean_env = d.sift(Recon_harmonic_H)
                 result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
                 result_harmonic_H["scale"] = second_scale
+                result_harmonic_H["reconstruction"] = Recon_harmonic_H
+                result_harmonic_H["t"] = t
 
                 Result_base_H[plot_name_H] = result_base_H
                 Result_harmonic_H[plot_name_H] = result_harmonic_H
+                
 
                 t1 = time.perf_counter()
 
@@ -161,10 +166,14 @@ def The_Function(noise_start, noise_level_step,noise_stop, beta_start, beta_step
                 upper_env, lower_env, mean_env = d.sift(Recon_base_W)
                 result_base_W = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
                 result_base_W["scale"] = second_scale
+                result_base_W["reconstruction"] = Recon_base_W
+                result_base_W["t"] = t
 
                 upper_env, lower_env, mean_env = d.sift(Recon_harmonic_W)
                 result_harmonic_W = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
                 result_harmonic_W["scale"] = second_scale
+                result_harmonic_W["reconstruction"] = Recon_harmonic_W
+                result_harmonic_W["t"] = t
 
                 Result_base_W[plot_name_W] = result_base_W
                 Result_harmonic_W[plot_name_W] = result_harmonic_W
@@ -204,7 +213,7 @@ def time_eval(Result_base_H, Result_harmonic_H ,Result_base_W, Result_harmonic_W
         time_base = []
         for element in Result_base_H[instance]:
              
-            if element == "scale":
+            if element == "scale" or  element == "reconstruction" or element == "t" :
                 continue
             if element is None:
                 continue
@@ -220,7 +229,7 @@ def time_eval(Result_base_H, Result_harmonic_H ,Result_base_W, Result_harmonic_W
         time_base = []
         for element in Result_base_W[instance]:
              
-            if element == "scale":
+            if element == "scale" or  element == "reconstruction" or element == "t":
                 continue
             if element is None:
                 continue
@@ -236,7 +245,7 @@ def time_eval(Result_base_H, Result_harmonic_H ,Result_base_W, Result_harmonic_W
         time_base = []
         for element in Result_base_S[instance]:
              
-            if element == "scale":
+            if element == "scale" or  element == "reconstruction" or element == "t":
                 continue
             if element is None:
                 continue
@@ -252,7 +261,7 @@ def time_eval(Result_base_H, Result_harmonic_H ,Result_base_W, Result_harmonic_W
         time_base = []
         for element in Result_harmonic_H[instance]:
              
-            if element == "scale":
+            if element == "scale" or  element == "reconstruction" or element == "t":
                 continue
             if element is None:
                 continue
@@ -267,7 +276,7 @@ def time_eval(Result_base_H, Result_harmonic_H ,Result_base_W, Result_harmonic_W
         time_base = []
         for element in Result_harmonic_W[instance]:
              
-            if element == "scale":
+            if element == "scale" or  element == "reconstruction" or element == "t":
                 continue
             if element is None:
                 continue
@@ -282,7 +291,7 @@ def time_eval(Result_base_H, Result_harmonic_H ,Result_base_W, Result_harmonic_W
         time_base = []
         for element in Result_harmonic_S[instance]:
              
-            if element == "scale":
+            if element == "scale" or  element == "reconstruction" or element == "t":
                 continue
             if element is None:
                 continue
