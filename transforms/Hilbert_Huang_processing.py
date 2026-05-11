@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.signal import hilbert, find_peaks
 from scipy.signal import butter, filtfilt
 from scipy.interpolate import CubicSpline
-
+import matplotlib.colors as colors
+import os
 
 
 
@@ -39,7 +40,7 @@ def sift(signal):
 
 
 
-def extract_imf(signal, max_iter=50, tol=1e-3):
+def extract_imf(signal, max_iter=100, tol=1e-5):
     """Extract one IMF using iterative sifting."""
     h = signal.copy()
 
@@ -182,25 +183,18 @@ def Bandpass(signal, fs, freq, bandwidth=5, order=4):
     
     return imf
 
-def plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, f_bins=300, t_bins=300):
+def plot_hilbert_spectrum(inst_freq,inst_amp,t,fs, name,f_bins=1000,t_bins=800,freq_percentile=99.7,log_amplitude=False):
     """
-    Plot a true Hilbert spectrum (time-frequency energy density map).
-    
-    Parameters
-    ----------
-    inst_freq : list of arrays
-        Instantaneous frequencies per IMF
-    inst_amp : list of arrays
-        Instantaneous amplitudes per IMF
-    t : array
-        Time vector (original signal time axis)
-    fs : float
-        Sampling frequency
-    f_bins : int
-        Number of frequency bins
-    t_bins : int
-        Number of time bins
+    Plot a Hilbert spectrum (time-frequency energy density map).
+
+    Features:
+    - Keeps only instantaneous frequencies > 0
+    - Automatically rescales frequency axis using percentile clipping
+    - Optional logarithmic scaling of amplitude values
     """
+
+    import numpy as np
+    import matplotlib.pyplot as plt
 
     # Flatten all IMFs into single arrays
     all_t = []
@@ -208,35 +202,89 @@ def plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, f_bins=300, t_bins=300):
     all_w = []
 
     for f, a in zip(inst_freq, inst_amp):
-        all_t.append(t[:-1])
-        all_f.append(f)
-        all_w.append(a)
+
+        # Keep only strictly positive finite frequencies
+        mask = np.isfinite(f) & (f > 500)
+
+        all_t.append(t[:-1][mask])
+        all_f.append(f[mask])
+        all_w.append(a[mask])
 
     all_t = np.concatenate(all_t)
     all_f = np.concatenate(all_f)
     all_w = np.concatenate(all_w)
 
-    # Define frequency range
-    f_min, f_max = np.min(all_f), np.max(all_f)
+    # ------------------------------------------------------------------
+    # Better frequency scaling
+    # ------------------------------------------------------------------
+    f_min = np.min(all_f)
+    f_max = np.percentile(all_f, freq_percentile)
 
-    # 2D histogram weighted by amplitude (energy proxy)
+    # Clip extreme frequencies
+    keep = all_f <= f_max
+
+    all_t = all_t[keep]
+    all_f = all_f[keep]
+    all_w = all_w[keep]
+
+    # ------------------------------------------------------------------
+    # Build histogram
+    # ------------------------------------------------------------------
     H, t_edges, f_edges = np.histogram2d(
         all_t,
         all_f,
         bins=[t_bins, f_bins],
+        range=[[all_t.min(), all_t.max()], [f_min, f_max]],
         weights=all_w
     )
 
+    # ------------------------------------------------------------------
+    # Log-scale amplitude values (NOT axis)
+    # ------------------------------------------------------------------
+    if log_amplitude:
+        H = np.log10(H + 1e-12)
+
     T, F = np.meshgrid(t_edges[:-1], f_edges[:-1], indexing="ij")
 
-    plt.figure(figsize=(10, 6))
-    plt.pcolormesh(T, F, H, shading="auto", cmap="viridis")
+    # ------------------------------------------------------------------
+    # Plot
+    # ------------------------------------------------------------------
+    folder = "plots"
+    os.makedirs(folder, exist_ok=True)
+    fig, ax = plt.subplots(figsize=(11, 6))
 
-    plt.xlabel("Time (s)")
-    plt.ylabel("Frequency (Hz)")
-    plt.title("Hilbert Spectrum (Time-Frequency Energy Density)")
-    plt.colorbar(label="Amplitude (energy proxy)")
-    plt.show()
+    pcm = ax.pcolormesh(
+        T,
+        F,
+        H,
+        shading="auto",
+        cmap="viridis"
+    )
+    if f_max >= 4.0e6:
+        ax.set_ylim(f_min, 4.0e6)
+    if f_max < 4.0e6:
+        ax.set_ylim(f_min, f_max)
+
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Frequency (Hz)")
+
+    if log_amplitude:
+        ax.set_title("Hilbert Spectrum (Log Amplitude)")
+        cbar_label = "log10(Amplitude)"
+    else:
+        ax.set_title("Hilbert Spectrum")
+        cbar_label = "Amplitude"
+
+    fig.colorbar(pcm, ax=ax, label=cbar_label)
+
+    plt.tight_layout()
+    filepath = os.path.join(folder, f"{name}.png")
+    plt.savefig(filepath, dpi=300)
+    plt.close()
+    print(f"Plot saved to {filepath}")
+    
+
+    return fig, ax, H, T, F
 
 def reconstruction(inst_amp, inst_freq, fs, fmin, fmax):
     n = len(inst_amp[0]) + 1  # restore original length
