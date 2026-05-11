@@ -62,62 +62,77 @@ def noise(signal, snr_db = 20):
     return noisy_signal
 
 
-def pad_to_length(x, target_len):
-    x = np.asarray(x)
-
-    n = len(x)
-
-    if n >= target_len:
-        return x
-
-    # Original sample positions
-    old_pos = np.arange(n)
-
-    # New positions with extra intermediate points
-    new_pos = np.linspace(0, n - 1, target_len)
-
-    return np.interp(new_pos, old_pos, x)
+def resample_to_time(signal, old_time, new_time):
+    """
+    Resample signal onto a new time grid while preserving timing.
+    """
+    return np.interp(new_time, old_time, signal)
 
 
-def create_signal(base_harmonic, second_harmonic, beta, noise_level,
-                  base_mode, second_mode, modes_base, modes_harmonic):
+def create_signal(base_harmonic, second_harmonic,
+                  beta, noise_level,
+                  base_mode, second_mode,
+                  modes_base, modes_harmonic):
 
-    # Max amplitudes
+    # ------------------------------------------------------------
+    # 1. Extract time vectors
+    # ------------------------------------------------------------
+    t_base = base_harmonic["Propagation time (micsec)"].to_numpy()
+    t_harm = second_harmonic["Propagation time (micsec)"].to_numpy()
+
+    # ------------------------------------------------------------
+    # 2. Build a COMMON physical time grid
+    #    (this is the critical fix)
+    # ------------------------------------------------------------
+    dt_base = np.mean(np.diff(t_base))
+    dt_harm = np.mean(np.diff(t_harm))
+
+    dt = min(dt_base, dt_harm)  # safest Nyquist-preserving choice
+
+    t_start = max(t_base[0], t_harm[0])
+    t_end   = min(t_base[-1], t_harm[-1])
+
+    t = np.arange(t_start, t_end, dt)
+
+    # ------------------------------------------------------------
+    # 3. Amplitude scaling (β is PURE amplitude control)
+    # ------------------------------------------------------------
     A1 = np.max(base_harmonic[base_mode].to_numpy())
     A2 = np.max(second_harmonic[second_mode].to_numpy())
 
-    A2_target = beta * (A1 ** 2)
-    second_scale = A2_target / A2
+    second_scale = beta * (A1 ** 2) / (A2 + 1e-12)  # avoid divide-by-zero
 
-    # ---- lengths ----
-    base_len = len(base_harmonic["Sum Propagated signal (nm)"].to_numpy())
-    second_len = len(second_harmonic[second_mode].to_numpy())
-    max_len = max(base_len, second_len)
+    # ------------------------------------------------------------
+    # 4. Initialize signal
+    # ------------------------------------------------------------
+    signal = np.zeros(len(t))
 
-    # ---- choose correct time array (LONGEST one) ----
-    if base_len >= second_len:
-        time = base_harmonic["Propagation time (micsec)"].to_numpy()
-    else:
-        time = second_harmonic["Propagation time (micsec)"].to_numpy()
-
-    # Initialize signal
-    signal = np.zeros(max_len)
-
-    # Base modes
+    # ------------------------------------------------------------
+    # 5. Add base modes (resampled onto common grid)
+    # ------------------------------------------------------------
     for mode in modes_base:
         sig = base_harmonic[mode].to_numpy()
-        signal += pad_to_length(sig, max_len)
+        sig_rs = np.interp(t, t_base, sig)
+        signal += sig_rs
 
-    # Harmonic modes
+    # ------------------------------------------------------------
+    # 6. Add harmonic modes (resampled + scaled)
+    # ------------------------------------------------------------
     for mode in modes_harmonic:
         sig = second_harmonic[mode].to_numpy()
-        signal += second_scale * pad_to_length(sig, max_len)
+        sig_rs = np.interp(t, t_harm, sig)
+        signal += second_scale * sig_rs
 
-    # Noise
-    level = noise_level * A2 * second_scale
-    noise = np.random.normal(0, level, max_len)
+    # ------------------------------------------------------------
+    # 7. Add noise (independent of β — IMPORTANT FIX)
+    # ------------------------------------------------------------
+    noise_std = noise_level * A1 / 2
+    noise = np.random.normal(0, noise_std, len(t))
 
     noisy_signal = signal + noise
 
-    return time, noisy_signal, second_scale*second_harmonic
+    # ------------------------------------------------------------
+    # 8. Return consistent dataset
+    # ------------------------------------------------------------
+    return t, noisy_signal, second_scale
 

@@ -25,7 +25,7 @@ def sift(signal):
     minima, _ = find_peaks(-signal)
 
     if len(maxima) < 2 or len(minima) < 2:
-        return signal
+        return signal, signal, np.zeros_like(signal)
 
     upper_env = envelope(signal, maxima)
     lower_env = envelope(signal, minima)
