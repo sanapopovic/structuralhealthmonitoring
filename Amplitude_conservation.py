@@ -10,7 +10,7 @@ import re
 import decomp as d
 from transforms import Hilbert_Huang_processing 
 from transforms import wavelet_processing
-from scipy.signal import find_peaks
+from transforms import SST_v2_processing
 
 """
 DICTIONARIES
@@ -101,6 +101,49 @@ def HHT(t, signal):
 #--- STFT + SST ---
 
 def STFT(t, signal):
+    # --- time-frequency analysis -----------------------------------------------
+    f_min_analyse = 1.0e6      # Hz — lower bound for TF display
+    f_max_analyse = 4.5e6      # Hz — upper bound for TF display
+    n_freq        = 400        # frequency bins (CWT)
+
+    band_min_base      = 1_100_000   # Hz
+    band_max_base      = 1_500_000
+    band_min_harmonic  = 2_300_000
+    band_max_harmonic  = 2_900_000
+
+    # --- STFT parameters (from blind-decomp stage 1) ---------------------------
+    stft_win_len = 128     # samples
+    stft_hop_len = 2
+    stft_n_fft   = 512
+
+
+    # --- band reconstructions ---
+    recon_base_stft = SST_v2_processing.reconstruct_band_stft(
+        t, signal,
+        band_min=band_min_base,
+        band_max=band_max_base,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,
+    )
+
+    recon_harmonic_stft = SST_v2_processing.reconstruct_band_stft(
+        t, signal,
+        band_min=band_min_harmonic,
+        band_max=band_max_harmonic,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,
+    )
+
+    return recon_base_stft, recon_harmonic_stft
+
+
+#--- STFT + SST ---
 
 
 
