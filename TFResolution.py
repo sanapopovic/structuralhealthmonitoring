@@ -74,10 +74,6 @@ def plot_signals_stft_sst(t1,f1,a1,t2,f2,a2,fmin=1e6,fmax=4.5e6):
     plt.tight_layout()
     plt.show()
 
-
-
-def wavelet(t,signal):
-    print("lol")
     
 
 
@@ -121,6 +117,6 @@ t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
 t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst=sst_processing_v2.stft_sst(t,signalSine,plot=False)
 t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst=sst_processing_v2.stft_sst(t,signalHannSine,plot=False)
 plot_signals_stft(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
-plot_signals_stft_sst(t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst,t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst)
+#plot_signals_stft_sst(t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst,t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst)
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
