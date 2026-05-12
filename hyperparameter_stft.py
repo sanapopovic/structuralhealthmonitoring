@@ -196,13 +196,12 @@ def get_residuals(r_h,r_b,og_h,og_b):
     b_error = abs(r_b-og_b)
     full_error = abs(r_full-og_full)
 
-    fig,ax = plt.subplot(1,3,figsize(10,5))
-    ax[0].plot(t,h_error)
-    ax[0].set_title("Harmonic Error")
+    fig,ax = plt.subplots(1,2,figsize=(12,5))
+    ax[0].plot(t,h_error,color="blue",alpha=0.5,label='Harmonic Error')
+    ax[0].plot(t,b_error,color='red',alpha=0.5,label='Base Error')
+    ax[0].set_title("Base & Harmonic Error")
     ax[1].plot(t, b_error)
     ax[1].set_title("Base Error")
-    ax[2].plot(t,full_error)
-    ax[2].set_title("Totall Error")
 
     plt.tight_layout()
     plt.savefig("plots/abs_errors.png", dpi=300)
@@ -211,6 +210,11 @@ def get_residuals(r_h,r_b,og_h,og_b):
 
 harmonic_error, base_error, total_error = get_residuals(
     recon_harmonic_stft,recon_base_stft,gt_harmonic,gt_base)
+
+sum_h_error = np.sum(harmonic_error)
+sum_b_error = np.sum(base_error)
+sum_t_error = np.sum(total_error)
+print(f"Total error: {sum_t_error}, base error: {sum_b_error}, harmonic error: {sum_h_error}")
 
 print("\n Reconstruction quality (compared against GT components)")
 print(f"  STFT base band SNR     : {_peak_snr(gt_base,     recon_base_stft):+.1f} dB")
