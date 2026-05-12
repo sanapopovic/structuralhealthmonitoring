@@ -21,7 +21,7 @@ from transforms.wavelet_processing import wavelet_scalogram
 #makes a sine wave
 
 #parameters
-freq = 1.33e5
+freq = 1.33e6
 wlen = 1
 
 
@@ -56,14 +56,14 @@ def SST(t,signal):
     print("lol")
 
 def STFT(t,signal,downsampling=1,hop=128,dB=False):
-    ft, I, fs = stft_processing.stft(signal, t)
+    ft, I, fs = stft_processing.stft(signal, t,win_length =256)
 
     # Convert Pandas objects to NumPy arrays if needed
-    if isinstance(S, (pd.DataFrame, pd.Series)):
-        S = S.to_numpy()
+    if isinstance(ft, (pd.DataFrame, pd.Series)):
+        ft = ft.to_numpy()
 
     # Compute amplitude from complex STFT
-    amplitude = np.abs(S)
+    amplitude = np.abs(ft)
 
     # Frequency and time axes
     n_freq, n_time = amplitude.shape
@@ -90,6 +90,7 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
     plt.title("stft_plot")
     plt.colorbar(label='Amplitude (dB)' if dB else 'Amplitude')
     plt.tight_layout()
+    plt.show()
     
 
     # Save plot
@@ -99,5 +100,7 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
 
     #print(f"Plot saved to {filepath}")
 
+STFT(t,signalSine,downsampling=1,hop=128,dB=False)
+STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
