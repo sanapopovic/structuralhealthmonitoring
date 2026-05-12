@@ -163,6 +163,7 @@ def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft
     return recon_harmonic_stft,recon_base_stft
 
 
+#find and plot errors = original signal - reconstructed signal
 def get_residuals(r_h,r_b,og_h,og_b,plot=False):
     og_full = og_h+og_b
     r_full = r_h+r_b 
@@ -183,6 +184,8 @@ def get_residuals(r_h,r_b,og_h,og_b,plot=False):
         plt.savefig("plots/abs_errors.png", dpi=300)
     return h_error,b_error,full_error
 
+
+# get the sum of the absolute error 
 def process_error(recon_harmonic,recon_base):
     harmonic_error, base_error, total_error = get_residuals(
         recon_harmonic,recon_base,gt_harmonic,gt_base)
@@ -223,18 +226,21 @@ if parameter == "stft_hop_len":
     b_error_lst = []
     t_error_lst = []
     par = []
+    #loop over all values of parameters to consider
     for i in range(eval_min,eval_max):
+        #get the reconstructed signal
         recon_harmonic_stft,recon_base_stft = stft_sst(
             t,signal,f_min_analyse,f_max_analyse,
             stft_win_len,i,stft_n_fft,
             stft_gamma,band_min_base,band_max_base,
             log_scale,gt_base,gt_harmonic,plot=False)
+        #get the summed errors and add them to the list
         sum_h_error,sum_b_error,sum_t_error = process_error(recon_harmonic_stft,recon_base_stft)
         h_error_lst.append(sum_h_error)
         b_error_lst.append(sum_b_error)
         t_error_lst.append(sum_t_error)
         par.append(i)
-
+    #plot the errors
     plt.figure(figsize=(12, 5))
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
@@ -251,18 +257,21 @@ if parameter == "stft_win_len":
     b_error_lst = []
     t_error_lst = []
     par = []
+    #loop over all values of parameters to consider
     for i in range(eval_min,eval_max):
+        #get the reconstructed signal
         recon_harmonic_stft,recon_base_stft = stft_sst(
             t,signal,f_min_analyse,f_max_analyse,
             i,stft_hop_len,stft_n_fft,
             stft_gamma,band_min_base,band_max_base,
             log_scale,gt_base,gt_harmonic,plot=False)
+        #get the summed errors and add them to the list
         sum_h_error,sum_b_error,sum_t_error = process_error(recon_harmonic_stft,recon_base_stft)
         h_error_lst.append(sum_h_error)
         b_error_lst.append(sum_b_error)
         t_error_lst.append(sum_t_error)
         par.append(i)
-
+    #plot the errors
     plt.figure(figsize=(12, 5))
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
@@ -279,18 +288,21 @@ if parameter == "stft_n_fft":
     b_error_lst = []
     t_error_lst = []
     par = []
+    #loop over all values of parameters to consider
     for i in range(eval_min,eval_max):
+        #get the reconstructed signal
         recon_harmonic_stft,recon_base_stft = stft_sst(
             t,signal,f_min_analyse,f_max_analyse,
             stft_win_len,stft_hop_len,i,
             stft_gamma,band_min_base,band_max_base,
             log_scale,gt_base,gt_harmonic,plot=False)
+        #get the summed errors and add them to the list
         sum_h_error,sum_b_error,sum_t_error = process_error(recon_harmonic_stft,recon_base_stft)
         h_error_lst.append(sum_h_error)
         b_error_lst.append(sum_b_error)
         t_error_lst.append(sum_t_error)
         par.append(i)
-
+    #plot the errors
     plt.figure(figsize=(12, 5))
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
