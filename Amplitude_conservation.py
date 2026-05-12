@@ -68,5 +68,22 @@ A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
 A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
 
 
-#upper_env, lower_env, mean_env = d.sift(Recon_base_H)
-#result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
+
+
+
+"""
+# time of arrival
+input reconstructed signal base
+output 
+
+upper_env, lower_env, mean_env = d.sift(---input---)
+result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
+
+
+input reconstructed signal harmonic
+output
+
+upper_env, lower_env, mean_env = d.sift(---input---)
+result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
+
+"""
