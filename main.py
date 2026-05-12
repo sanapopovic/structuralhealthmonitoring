@@ -8,10 +8,10 @@ win_length = 512  # longer for better freq resolution
 hop = 64  #longer for shorter computatuin time
 
 #All files should be uploaded as csv
-data = preprocess.get_data(r"Data\In-plane_TemporalResponse@7.9866MHzmm@200mm.csv")
+data = preprocess.get_data(r"Data/In-plane_TemporalResponse@7.9866MHzmm@200mm.xlsx")
 
 t = data["Propagation time (micsec)"]
-y = data["Sum Propagated signal (nm)"]
+y = data["S1 Propagated signal (nm)"]
 
 y_std = stft_processing.std(y)
 
@@ -29,3 +29,5 @@ preprocess.plot(f,amp,1, "Average Frequency Amplitude")
 
 ridges = stft_processing.detect_ridges(S)
 
+plt.plot(t,y)
+plt.show()

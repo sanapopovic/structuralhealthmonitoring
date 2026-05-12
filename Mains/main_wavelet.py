@@ -34,17 +34,12 @@ WILL BE INCLUDED IN THE SIGNAL. NEVER ALTER THE LISTS AND DICTIONARIES ABOVE!!!!
 THE MODES YOU WANT TO BE FOUND IN THE SIGNAL SHOULD BE INCLUDED IN time_stamp AS A DICTIONARY
 
 '''
-modes_harmonic = ["S0 Propagated signal (nm)", "S1 Propagated signal (nm)", "S2 Propagated signal (nm)", "S3 Propagated signal (nm)", "S4 Propagated signal (nm)",
-         "S5 Propagated signal (nm)", "S6 Propagated signal (nm)", "S7 Propagated signal (nm)", "S8 Propagated signal (nm)", "A0 Propagated signal (nm)",
-         "A1 Propagated signal (nm)", "A2 Propagated signal (nm)", "A3 Propagated signal (nm)", "A4 Propagated signal (nm)", "A5 Propagated signal (nm)",
-         "A7 Propagated signal (nm)"]
-modes_base = ["S0 Propagated signal (nm)", "S1 Propagated signal (nm)", "S2 Propagated signal (nm)", "S3 Propagated signal (nm)",
-                  "A0 Propagated signal (nm)", "A1 Propagated signal (nm)", "A2 Propagated signal (nm)", "A3 Propagated signal (nm)",
-                  "A4 Propagated signal (nm)"]
+modes_harmonic = ["S2 Propagated signal (nm)", "S3 Propagated signal (nm)", "S4 Propagated signal (nm)", "A3 Propagated signal (nm)"]
+modes_base = ["S2 Propagated signal (nm)", "S3 Propagated signal (nm)", "A3 Propagated signal (nm)"]
 time_stamp_harmonic = {"S1": 68.4808,  "S2": 76.5127, "A4": 91.8515  , "S4": 64.9935, "A2": 71.7798, "S0": 70.7973, "A0": 70.7951}
 time_stamp_base = {"S1": 68.4808,  "S2": 76.5127, "A4": 91.8515  , "S4": 64.9935, "A2": 71.7798, "S0": 70.7973, "A0": 70.7951}
 
-noise_level = 1.5 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
+noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
 beta = 6
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
@@ -101,3 +96,5 @@ ax[1].set_title("Harmonic Reconstruction")
 
 plt.tight_layout()
 plt.show()
+print(max(signal))
+print(max(Recon_harmonic_W))
