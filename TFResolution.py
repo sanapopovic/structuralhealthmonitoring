@@ -25,7 +25,6 @@ from transforms.wavelet_processing import wavelet_scalogram
 freq = 1.33e6
 wlen = 1
 
-
 t = np.linspace(0,500e-6, 2500)
 signalSine = np.sin(2*np.pi * freq * t)
 
@@ -39,9 +38,6 @@ padded_hann = np.concatenate([
     hann,
     np.zeros(total_samples - window_length - pad)  # handles odd-length remainders
 ])
-
-#hann = sp.signal.windows.hann(len(t))
-#signalHannSine = signalSine * hann
 signalHannSine = signalSine * padded_hann
 
 def plot_signals_stft(t1,f1,a1,t2,f2,a2):
@@ -74,7 +70,6 @@ def plot_signals_stft_sst(t1,f1,a1,t2,f2,a2,fmin=1e6,fmax=4.5e6):
     plt.tight_layout()
     plt.show()
 
-    
 
 
 def STFT(t,signal,downsampling=1,hop=128,dB=False):
@@ -102,18 +97,6 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
 
     return t_plot,f,amplitude_plot
 
-
-    
-
-
-
-
-
-
-
-
-
-
 t_sin,f_sin,a_sin = STFT(t,signalSine,downsampling=1,hop=128,dB=False)
 t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
 t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst=sst_processing_v2.stft_sst(t,signalSine)
@@ -122,4 +105,6 @@ t_sin_cwt_sst,f_sin_cwt_sst,a_sin_cwt_sst = sst_processing_v2.cwt_sst(t,signalSi
 t_hann_cwt_sst,f_hann_cwt_sst,a_hann_cwt_sst = sst_processing_v2.cwt_sst(t,signalHannSine)
 plot_signals_stft(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
 #plot_signals_stft_sst(t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst,t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst)
+
+
 
