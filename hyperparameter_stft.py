@@ -31,7 +31,7 @@ from transforms import SST_v2_processing
 
 # --- signal construction (mirrors despair.py) -------------------------------
 noise_level = 0     # 0 = clean, 1.5 = 150% noise
-beta        = 9            # non-linearity parameter
+beta        = 6            # non-linearity parameter
 
 A1_mode = "S2 Propagated signal (nm)"   # base harmonic mode for β
 A2_mode = "S4 Propagated signal (nm)"   # second harmonic mode for β
@@ -39,23 +39,8 @@ A2_mode = "S4 Propagated signal (nm)"   # second harmonic mode for β
 dataset_base      = "Data/In-plane_TemporalResponse@7.9866MHzmm@200mm.xlsx"
 dataset_harmonic   = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.xlsx"
 
-modes_base = [
-    "S0 Propagated signal (nm)", "S1 Propagated signal (nm)",
-    "S2 Propagated signal (nm)", "S3 Propagated signal (nm)",
-    "A0 Propagated signal (nm)", "A1 Propagated signal (nm)",
-    "A2 Propagated signal (nm)", "A3 Propagated signal (nm)",
-    "A4 Propagated signal (nm)",
-]
-modes_harmonic = [
-    "S0 Propagated signal (nm)", "S1 Propagated signal (nm)",
-    "S2 Propagated signal (nm)", "S3 Propagated signal (nm)",
-    "S4 Propagated signal (nm)", "S5 Propagated signal (nm)",
-    "S6 Propagated signal (nm)", "S7 Propagated signal (nm)",
-    "S8 Propagated signal (nm)", "A0 Propagated signal (nm)",
-    "A1 Propagated signal (nm)", "A2 Propagated signal (nm)",
-    "A3 Propagated signal (nm)", "A4 Propagated signal (nm)",
-    "A5 Propagated signal (nm)", "A7 Propagated signal (nm)",
-]
+modes_base = ["S2 Propagated signal (nm)","A1 Propagated signal (nm)","A4 Propagated signal (nm)"]
+modes_harmonic = ["S2 Propagated signal (nm)", "S4 Propagated signal (nm)", "A1 Propagated signal (nm)","A4 Propagated signal (nm)"]
 
 # --- time-frequency analysis -----------------------------------------------
 f_min_analyse = 1.0e6      # Hz — lower bound for TF display
@@ -183,23 +168,24 @@ def _peak_snr(reference, recon):
         snr = 10 * np.log10(np.var(reference) / (np.var(noise) + 1e-30))
     return snr
 
-def get_residuals(r_h,r_b,og_h,og_b):
+def get_residuals(r_h,r_b,og_h,og_b,plot=False):
     og_full = og_h+og_b
     r_full = r_h+r_b 
     h_error = abs(r_h-og_h)
     b_error = abs(r_b-og_b)
     full_error = abs(r_full-og_full)
 
-    fig,ax = plt.subplots(1,2,figsize=(12,5))
-    ax[0].plot(t,h_error,color="blue",alpha=0.5,label='Harmonic Error')
-    ax[0].plot(t,b_error,color='red',alpha=0.5,label='Base Error')
-    ax[0].set_title("Base & Harmonic Error")
-    ax[0].legend()
-    ax[1].plot(t, full_error)
-    ax[1].set_title("Total Error")
+    if plot: 
+        fig,ax = plt.subplots(1,2,figsize=(12,5))
+        ax[0].plot(t,h_error,color="blue",alpha=0.5,label='Harmonic Error')
+        ax[0].plot(t,b_error,color='red',alpha=0.5,label='Base Error')
+        ax[0].set_title("Base & Harmonic Error")
+        ax[0].legend()
+        ax[1].plot(t, full_error)
+        ax[1].set_title("Total Error")
 
-    plt.tight_layout()
-    plt.savefig("plots/abs_errors.png", dpi=300)
+        plt.tight_layout()
+        plt.savefig("plots/abs_errors.png", dpi=300)
     return h_error,b_error,full_error
 
 def process_error(recon_harmonic,recon_base):
@@ -222,12 +208,16 @@ def process_error(recon_harmonic,recon_base):
 # Execute
 # =============================================================
 
+#plot signal
+a,b = stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic,plot=True)
+
+
 #options: stft_win_len, stft_hop_len, stft_n_fft
-parameter = "stft_hop_len"
+parameter = "lol"
 #options: win_len = 100, hop_len = 2, n_fft = 500
-eval_min = 2
+eval_min = 500
 #options: win_len = 150, hop_len = 8, n_fft = 550
-eval_max = 8
+eval_max = 550
 
 #stft_win_len = 128     # samples
 #stft_hop_len = 2
@@ -250,11 +240,73 @@ if parameter == "stft_hop_len":
         t_error_lst.append(sum_t_error)
         par.append(i)
 
+    plt.figure(figsize=(12, 5))
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
     plt.plot(par,t_error_lst,color="green",label="Total Error")
     plt.title(f"Errors vs {parameter}")
+    plt.xlabel(parameter)
+    plt.ylabel("Summed Error")
     plt.legend()
+    plt.tight_layout()
+    plt.savefig(f"plots/errors_{parameter}.png", dpi=300)
+
+
+if parameter == "stft_win_len":
+    h_error_lst = []
+    b_error_lst = []
+    t_error_lst = []
+    par = []
+    for i in range(eval_min,eval_max):
+        recon_harmonic_stft,recon_base_stft = stft_sst(
+            t,signal,f_min_analyse,f_max_analyse,
+            i,stft_hop_len,stft_n_fft,
+            stft_gamma,band_min_base,band_max_base,
+            log_scale,gt_base,gt_harmonic,plot=False)
+        sum_h_error,sum_b_error,sum_t_error = process_error(recon_harmonic_stft,recon_base_stft)
+        h_error_lst.append(sum_h_error)
+        b_error_lst.append(sum_b_error)
+        t_error_lst.append(sum_t_error)
+        par.append(i)
+
+    plt.figure(figsize=(12, 5))
+    plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
+    plt.plot(par,b_error_lst,color="red",label="Base Error")
+    plt.plot(par,t_error_lst,color="green",label="Total Error")
+    plt.title(f"Errors vs {parameter}")
+    plt.xlabel(parameter)
+    plt.ylabel("Summed Error")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f"plots/errors_{parameter}.png", dpi=300)
+
+
+if parameter == "stft_n_fft":
+    h_error_lst = []
+    b_error_lst = []
+    t_error_lst = []
+    par = []
+    for i in range(eval_min,eval_max):
+        recon_harmonic_stft,recon_base_stft = stft_sst(
+            t,signal,f_min_analyse,f_max_analyse,
+            stft_win_len,stft_hop_len,i,
+            stft_gamma,band_min_base,band_max_base,
+            log_scale,gt_base,gt_harmonic,plot=False)
+        sum_h_error,sum_b_error,sum_t_error = process_error(recon_harmonic_stft,recon_base_stft)
+        h_error_lst.append(sum_h_error)
+        b_error_lst.append(sum_b_error)
+        t_error_lst.append(sum_t_error)
+        par.append(i)
+
+    plt.figure(figsize=(12, 5))
+    plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
+    plt.plot(par,b_error_lst,color="red",label="Base Error")
+    plt.plot(par,t_error_lst,color="green",label="Total Error")
+    plt.title(f"Errors vs {parameter}")
+    plt.xlabel(parameter)
+    plt.ylabel("Summed Error")
+    plt.legend()
+    plt.tight_layout()
     plt.savefig(f"plots/errors_{parameter}.png", dpi=300)
 
 print("\nDone — all plots saved to plots/")
