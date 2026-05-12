@@ -44,10 +44,12 @@ padded_hann = np.concatenate([
 signalHannSine = signalSine * padded_hann
 
 def plot_signals(t,signalHannSine, signalSine):
+    plt.subplot(1,2,1)
     plt.plot(t, signalHannSine)
-    plt.show()
+    plt.subplot(1,2,2)
     plt.plot(t, signalSine)
     plt.show()
+
 
 def wavelet(t,signal):
     print("lol")
@@ -93,12 +95,6 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
     plt.show()
     
 
-    # Save plot
-    #filepath = os.path.join(folder, f"{name}.png")
-    #plt.savefig(filepath, dpi=300)
-    #plt.close()
-
-    #print(f"Plot saved to {filepath}")
 
 STFT(t,signalSine,downsampling=1,hop=128,dB=False)
 STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
