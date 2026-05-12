@@ -265,7 +265,7 @@ def A_max_S2_init(data_base, data_harmonic, noise_level):
 
 def A_max_S4_init(data_base, data_harmonic, noise_level):
 
-    #Create signal with only S2 + noise is present
+    #Create signal with only S4 + noise is present
     modes_base = []
     modes_harmonic = ["S4 Propagated signal (nm)"]
     t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
@@ -320,8 +320,14 @@ def Main(Length,,,beta = 6):
     data_harmonic = preprocess.get_data(dataset_harmonic)
     
     for noise in noise_lvl_list:
+        #Create signal
         t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise, A1_mode, A2_mode, modes_base, modes_harmonic)
 
+        #Find max initial amplitudes
+        A_max_S2 = A_max_S2_init(data_base, data_harmonic,noise)
+        A_max_S4 = A_max_S4_init(data_base, data_harmonic,noise)
+
+        
 
 
 
