@@ -120,68 +120,62 @@ print(f"    GT harmonic peak: {np.max(np.abs(gt_harmonic)):.4f} nm")
 # ═══════════════════════════════════════════════════════════════════════════
 #  STFT-SST
 # ═══════════════════════════════════════════════════════════════════════════
+def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic):
+    print("\n[2] STFT-SST …")
+    S_orig, S_sst, f_stft, t_stft = SST_v2_processing.stft_sst(
+        t, signal,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,
+        gamma=stft_gamma,)
 
-print("\n[2] STFT-SST …")
-S_orig, S_sst, f_stft, t_stft = SST_v2_processing.stft_sst(
-    t, signal,
-    fmin=f_min_analyse,
-    fmax=f_max_analyse,
-    win_len=stft_win_len,
-    hop_len=stft_hop_len,
-    n_fft=stft_n_fft,
-    gamma=stft_gamma,
-)
-print(f"    STFT shape: {S_orig.shape}   SST shape: {S_sst.shape}")
+    # side-by-side spectrogram comparison
+    SST_v2_processing.plot_comparison(
+        t_stft, f_stft,
+        S_orig, S_sst,
+        method="STFT",
+        name="sst_stft_comparison",
+        log_scale=log_scale,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,)
+    
+    print(f"    STFT shape: {S_orig.shape}   SST shape: {S_sst.shape}")
+    # band reconstructions
+    print("    Reconstructing base band (STFT) …")
+    recon_base_stft = SST_v2_processing.reconstruct_band_stft(
+        t, signal,
+        band_min=band_min_base,
+        band_max=band_max_base,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,)
 
-# side-by-side spectrogram comparison
-SST_v2_processing.plot_comparison(
-    t_stft, f_stft,
-    S_orig, S_sst,
-    method="STFT",
-    name="sst_stft_comparison",
-    log_scale=log_scale,
-    fmin=f_min_analyse,
-    fmax=f_max_analyse,
-)
+    print("    Reconstructing harmonic band (STFT) …")
+    recon_harmonic_stft = SST_v2_processing.reconstruct_band_stft(
+        t, signal,
+        band_min=band_min_harmonic,
+        band_max=band_max_harmonic,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,)
+    
+    SST_v2_processing.plot_reconstruction(
+        t, signal,
+        recon_base_stft,
+        recon_harmonic_stft,
+        gt_base=gt_base,
+        gt_harmonic=gt_harmonic,
+        method="STFT",
+        name="sst_stft_reconstruction",)
 
-# band reconstructions
-print("    Reconstructing base band (STFT) …")
-recon_base_stft = SST_v2_processing.reconstruct_band_stft(
-    t, signal,
-    band_min=band_min_base,
-    band_max=band_max_base,
-    fmin=f_min_analyse,
-    fmax=f_max_analyse,
-    win_len=stft_win_len,
-    hop_len=stft_hop_len,
-    n_fft=stft_n_fft,
-)
 
-print("    Reconstructing harmonic band (STFT) …")
-recon_harmonic_stft = SST_v2_processing.reconstruct_band_stft(
-    t, signal,
-    band_min=band_min_harmonic,
-    band_max=band_max_harmonic,
-    fmin=f_min_analyse,
-    fmax=f_max_analyse,
-    win_len=stft_win_len,
-    hop_len=stft_hop_len,
-    n_fft=stft_n_fft,
-)
-
-SST_v2_processing.plot_reconstruction(
-    t, signal,
-    recon_base_stft,
-    recon_harmonic_stft,
-    gt_base=gt_base,
-    gt_harmonic=gt_harmonic,
-    method="STFT",
-    name="sst_stft_reconstruction",
-)
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  QUICK SANITY CHECK  — print peak SNR of reconstructions
-# ═══════════════════════════════════════════════════════════════════════════
+    return recon_harmonic_stft,recon_base_stft
 
 def _peak_snr(reference, recon):
     noise = reference - recon
@@ -200,13 +194,20 @@ def get_residuals(r_h,r_b,og_h,og_b):
     ax[0].plot(t,h_error,color="blue",alpha=0.5,label='Harmonic Error')
     ax[0].plot(t,b_error,color='red',alpha=0.5,label='Base Error')
     ax[0].set_title("Base & Harmonic Error")
-    ax[1].plot(t, b_error)
-    ax[1].set_title("Base Error")
+    ax[0].legend()
+    ax[1].plot(t, full_error)
+    ax[1].set_title("Total Error")
 
     plt.tight_layout()
     plt.savefig("plots/abs_errors.png", dpi=300)
     return h_error,b_error,full_error
 
+
+recon_harmonic_stft,recon_base_stft = stft_sst(
+    t,signal,f_min_analyse,f_max_analyse,
+    stft_win_len,stft_hop_len,stft_n_fft,
+    stft_gamma,band_min_base,band_max_base,
+    log_scale,gt_base,gt_harmonic)
 
 harmonic_error, base_error, total_error = get_residuals(
     recon_harmonic_stft,recon_base_stft,gt_harmonic,gt_base)
