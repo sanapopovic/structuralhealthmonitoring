@@ -74,7 +74,6 @@ stft_n_fft   = 512
 
 # --- SST thresholds --------------------------------------------------------
 stft_gamma = 1e-6      # STFT bins weaker than this are not reassigned
-cwt_gamma  = 1e-8      # CWT  coefficients weaker than this are not reassigned
 
 # --- plot flags ------------------------------------------------------------
 log_scale = True       # dB colour scale in TF plots
@@ -120,8 +119,8 @@ print(f"    GT harmonic peak: {np.max(np.abs(gt_harmonic)):.4f} nm")
 # ═══════════════════════════════════════════════════════════════════════════
 #  STFT-SST
 # ═══════════════════════════════════════════════════════════════════════════
-def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic):
-    print("\n[2] STFT-SST …")
+def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic,plot=True):
+    #print("\n[2] STFT-SST …")
     S_orig, S_sst, f_stft, t_stft = SST_v2_processing.stft_sst(
         t, signal,
         fmin=f_min_analyse,
@@ -131,19 +130,20 @@ def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft
         n_fft=stft_n_fft,
         gamma=stft_gamma,)
 
-    # side-by-side spectrogram comparison
-    SST_v2_processing.plot_comparison(
-        t_stft, f_stft,
-        S_orig, S_sst,
-        method="STFT",
-        name="sst_stft_comparison",
-        log_scale=log_scale,
-        fmin=f_min_analyse,
-        fmax=f_max_analyse,)
+    if plot:
+        # side-by-side spectrogram comparison
+        SST_v2_processing.plot_comparison(
+            t_stft, f_stft,
+            S_orig, S_sst,
+            method="STFT",
+            name="sst_stft_comparison",
+            log_scale=log_scale,
+            fmin=f_min_analyse,
+            fmax=f_max_analyse,)
     
-    print(f"    STFT shape: {S_orig.shape}   SST shape: {S_sst.shape}")
+    #print(f"    STFT shape: {S_orig.shape}   SST shape: {S_sst.shape}")
     # band reconstructions
-    print("    Reconstructing base band (STFT) …")
+    #print("    Reconstructing base band (STFT) …")
     recon_base_stft = SST_v2_processing.reconstruct_band_stft(
         t, signal,
         band_min=band_min_base,
@@ -154,7 +154,7 @@ def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft
         hop_len=stft_hop_len,
         n_fft=stft_n_fft,)
 
-    print("    Reconstructing harmonic band (STFT) …")
+    #print("    Reconstructing harmonic band (STFT) …")
     recon_harmonic_stft = SST_v2_processing.reconstruct_band_stft(
         t, signal,
         band_min=band_min_harmonic,
@@ -165,15 +165,15 @@ def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft
         hop_len=stft_hop_len,
         n_fft=stft_n_fft,)
     
-    SST_v2_processing.plot_reconstruction(
-        t, signal,
-        recon_base_stft,
-        recon_harmonic_stft,
-        gt_base=gt_base,
-        gt_harmonic=gt_harmonic,
-        method="STFT",
-        name="sst_stft_reconstruction",)
-
+    if plot:
+        SST_v2_processing.plot_reconstruction(
+            t, signal,
+            recon_base_stft,
+            recon_harmonic_stft,
+            gt_base=gt_base,
+            gt_harmonic=gt_harmonic,
+            method="STFT",
+            name="sst_stft_reconstruction",)
 
     return recon_harmonic_stft,recon_base_stft
 
@@ -202,24 +202,60 @@ def get_residuals(r_h,r_b,og_h,og_b):
     plt.savefig("plots/abs_errors.png", dpi=300)
     return h_error,b_error,full_error
 
+def process_error(recon_harmonic,recon_base):
+    harmonic_error, base_error, total_error = get_residuals(
+        recon_harmonic,recon_base,gt_harmonic,gt_base)
 
-recon_harmonic_stft,recon_base_stft = stft_sst(
-    t,signal,f_min_analyse,f_max_analyse,
-    stft_win_len,stft_hop_len,stft_n_fft,
-    stft_gamma,band_min_base,band_max_base,
-    log_scale,gt_base,gt_harmonic)
+    sum_h_error = np.sum(harmonic_error)
+    sum_b_error = np.sum(base_error)
+    sum_t_error = np.sum(total_error) 
+    #print(f"Total error: {sum_t_error}, base error: {sum_b_error}, harmonic error: {sum_h_error}")
+    return sum_h_error,sum_b_error,sum_t_error
 
-harmonic_error, base_error, total_error = get_residuals(
-    recon_harmonic_stft,recon_base_stft,gt_harmonic,gt_base)
+        
 
-sum_h_error = np.sum(harmonic_error)
-sum_b_error = np.sum(base_error)
-sum_t_error = np.sum(total_error)
-print(f"Total error: {sum_t_error}, base error: {sum_b_error}, harmonic error: {sum_h_error}")
 
-print("\n Reconstruction quality (compared against GT components)")
-print(f"  STFT base band SNR     : {_peak_snr(gt_base,     recon_base_stft):+.1f} dB")
-print(f"  STFT harmonic SNR      : {_peak_snr(gt_harmonic, recon_harmonic_stft):+.1f} dB")
+
+
+
+# =============================================================
+# Execute
+# =============================================================
+
+#options: stft_win_len, stft_hop_len, stft_n_fft
+parameter = "stft_hop_len"
+#options: win_len = 100, hop_len = 2, n_fft = 500
+eval_min = 2
+#options: win_len = 150, hop_len = 8, n_fft = 550
+eval_max = 8
+
+#stft_win_len = 128     # samples
+#stft_hop_len = 2
+#stft_n_fft   = 512
+
+if parameter == "stft_hop_len":
+    h_error_lst = []
+    b_error_lst = []
+    t_error_lst = []
+    par = []
+    for i in range(eval_min,eval_max):
+        recon_harmonic_stft,recon_base_stft = stft_sst(
+            t,signal,f_min_analyse,f_max_analyse,
+            stft_win_len,i,stft_n_fft,
+            stft_gamma,band_min_base,band_max_base,
+            log_scale,gt_base,gt_harmonic,plot=False)
+        sum_h_error,sum_b_error,sum_t_error = process_error(recon_harmonic_stft,recon_base_stft)
+        h_error_lst.append(sum_h_error)
+        b_error_lst.append(sum_b_error)
+        t_error_lst.append(sum_t_error)
+        par.append(i)
+
+    plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
+    plt.plot(par,b_error_lst,color="red",label="Base Error")
+    plt.plot(par,t_error_lst,color="green",label="Total Error")
+    plt.title(f"Errors vs {parameter}")
+    plt.legend()
+    plt.savefig(f"plots/errors_{parameter}.png", dpi=300)
 
 print("\nDone — all plots saved to plots/")
 
