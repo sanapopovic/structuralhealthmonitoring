@@ -63,7 +63,7 @@ plt.xlabel("Time in microsec")
 plt.show()
 
 
-# max amp values inital wave
+# max amp values inital wave (no noise, 200mm) 
 A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
 A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
 
@@ -81,10 +81,6 @@ def HHT(t, signal):
 
     f_min_harmonic = 2300000
     f_max_harmonic = 2900000
-
-    f_bins = 2000
-    t_bins = 600
-    log_amplitude = True
 
 
     dt = np.mean(np.diff(t))
@@ -169,7 +165,6 @@ def Wavelet(t, signal):
         n_freqs=n_freq,
     )
 
-    print("    Reconstructing harmonic band (CWT) …")
     recon_harmonic_cwt = SST_v2_processing.reconstruct_band_cwt(
         t, signal,
         band_min=band_min_harmonic,
@@ -183,17 +178,36 @@ def Wavelet(t, signal):
     return recon_base_cwt, recon_harmonic_cwt
 
 
+# Reconstructed Signals
+recon_base_stft, recon_harmonic_stft = STFT(t, signal)
+recon_base_hht, recon_harmonic_hht = HHT(t, signal)
+recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
+
+
+# --- time of arrival ---
+
+def ToA(recon_base, recon_harmonic):
+    upper_env, lower_env, mean_env = d.sift(recon_base)
+    result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
+
+    upper_env, lower_env, mean_env = d.sift(recon_harmonic)
+    result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
+
+    return result_base_H, result_harmonic_H
+
+
+
 """
-# time of arrival
-input reconstructed signal base
-output 
+# --- time of arrival ---
+#input reconstructed signal base
+#output 
 
 upper_env, lower_env, mean_env = d.sift(---input---)
 result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
 
 
-input reconstructed signal harmonic
-output
+#input reconstructed signal harmonic
+#output
 
 upper_env, lower_env, mean_env = d.sift(---input---)
 result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
