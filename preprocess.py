@@ -124,9 +124,9 @@ def create_signal(base_harmonic, second_harmonic,
         signal += second_scale * sig_rs
 
     # ------------------------------------------------------------
-    # 7. Add noise (independent of β — IMPORTANT FIX)
+    # 7. Add noise 
     # ------------------------------------------------------------
-    noise_std = noise_level * A1 / 2
+    noise_std = noise_level * A2*second_scale / 2
     noise = np.random.normal(0, noise_std, len(t))
 
     noisy_signal = signal + noise
