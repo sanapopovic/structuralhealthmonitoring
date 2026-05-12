@@ -221,3 +221,18 @@ def A_diff(A_max_S2_init, A_max_S4_init, A_max_S2_after, A_max_S4_after):
 
     return S2_diff, S4_diff
 
+
+# --- Beta parameter difference --- 
+
+def Beta_diff(Amp_S2, Amp_S4, beta_predefined=6):
+    """Calculates beta after transforms and compairs it to the pre defined beta (predefined to create initial wave)
+    Inputs| Amplitude of S2 and S4 after reconstruction
+    Outputs| Absolute value of the difference of the calculated beta compared to the predefined beta (=6), 
+    """
+
+    beta = Amp_S4 / (Amp_S2 ** 2)
+
+    beta_diff = abs(beta_predefined - beta)
+
+    return beta_diff
+
