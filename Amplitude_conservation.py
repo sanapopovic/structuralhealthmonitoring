@@ -193,7 +193,7 @@ def Wavelet(t, signal):
 
 # --- time of arrival ---
 
-def ToA(recon_base, recon_harmonic):
+def ToA(recon_base, recon_harmonic, time_stamp_base, time_stamp_harmonic):
     """Applies time of arrival, 
     Inputs| band reconstruction of base frequency and 2nd harmonic 
     outputs| 'mode': {peak_index, peak_time, peak_value, time_offset}
@@ -339,9 +339,9 @@ def Main(Length,beta = 6):
         recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
 
         #Mode decomposition (time of arrival)
-        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft)
-        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht)
-        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt)
+        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft, time_stamp_base, time_stamp_harmonic)
+        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht, time_stamp_base, time_stamp_harmonic)
+        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt, time_stamp_base, time_stamp_harmonic)
 
         #Amplitudes of decomposed S2 and S4
         A_S2_stft, A_S4_stft = amps(result_base_stft, result_harmonic_stft)
@@ -374,12 +374,12 @@ def Main(Length,beta = 6):
     print(f"Beta difference stft:{beta_diff_stft_list}")
     print(f"Beta difference hht:{beta_diff_hht_list}")
     print(f"Beta difference wavelet:{beta_diff_wt_list}")
-    
+
     return amp_diff_stft_list, amp_diff_hht_list, amp_diff_wt_list, beta_diff_stft_list, beta_diff_hht_list, beta_diff_wt_list
 
 
         
-
+amp_diff_stft_list, amp_diff_hht_list, amp_diff_wt_list, beta_diff_stft_list, beta_diff_hht_list, beta_diff_wt_list = Main(200)
 
 
 
