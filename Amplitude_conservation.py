@@ -44,12 +44,18 @@ A1_mode = "S2 Propagated signal (nm)" # Mode of base harmonic
 A2_mode = "S4 Propagated signal (nm)" # Mode of second harmonic
 
 #data sets: as a string define which data set to be read
-dataset_base = "Data/In-plane_TemporalResponse@7.9866MHzmm@200mm.xlsx"
-dataset_harmonic = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.xlsx"
+dataset_base_200mm = "Data/In-plane_TemporalResponse@7.9866MHzmm@200mm.xlsx"
+dataset_harmonic_200mm = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.xlsx"
+dataset_base_250mm = "Data/In-plane_TemporalResponse@7.9866MHzmm@250mm.xlsx"
+dataset_harmonic_250mm = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@250mm.xlsx"
+dataset_base_300mm = "Data/In-plane_TemporalResponse@7.9866MHzmm@300mm.xlsx"
+dataset_harmonic_300mm = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@300mm.xlsx"
+dataset_base_350mm = "Data/In-plane_TemporalResponse@7.9866MHzmm@350mm.xlsx"
+dataset_harmonic_350mm = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@350mm.xlsx"
 
 #create the input/initial signal
-data_harmonic = preprocess.get_data(dataset_harmonic)
-data_base = preprocess.get_data(dataset_base)
+data_harmonic = preprocess.get_data(dataset_harmonic_200mm)
+data_base = preprocess.get_data(dataset_base_200mm)
 
 t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
 
@@ -238,7 +244,91 @@ def Beta_diff(Amp_S2, Amp_S4, beta_predefined=6):
     return beta_diff
 
 
+# --- Finding max amplitude S2 of initial signal ---
 
+def A_max_S2_init(data_base, data_harmonic, noise_level):
+
+    #Create signal with only S2 + noise is present
+    modes_base = ["S2 Propagated signal (nm)"]
+    modes_harmonic = []
+    t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
+
+    #Determine amplitude of S2
+    max_idx = np.argmax(signal) # Finds the array index of the highest value
+    max_time = t[max_idx]            # Gets the corresponding time
+    max_val = signal[max_idx]   # Gets the highest amplitude value
+
+    return max_val
+    
+
+# --- Finding max amplitude S4 of initial signal ---
+
+def A_max_S4_init(data_base, data_harmonic, noise_level):
+
+    #Create signal with only S2 + noise is present
+    modes_base = []
+    modes_harmonic = ["S4 Propagated signal (nm)"]
+    t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
+
+    #Determine amplitude of S2
+    max_idx = np.argmax(signal) # Finds the array index of the highest value
+    max_time = t[max_idx]            # Gets the corresponding time
+    max_val = signal[max_idx]   # Gets the highest amplitude value
+
+    return max_val
+
+
+
+
+
+
+
+
+# --- Main function -----------------------------------------------
+noise_lvl_list = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+def Main(Length,,,beta = 6):
+
+    if Length == 200:
+        dataset_base = dataset_base_200mm
+        dataset_harmonic = dataset_harmonic_200mm
+        time_stamp_base = time_stamp_base_200mm 
+        time_stamp_harmonic = time_stamp_harmonic_200mm 
+
+    elif Length == 250:
+        dataset_base = dataset_base_250mm
+        dataset_harmonic = dataset_harmonic_250mm
+        time_stamp_base = time_stamp_base_250mm 
+        time_stamp_harmonic = time_stamp_harmonic_250mm
+
+    elif Length == 300:
+        dataset_base = dataset_base_300mm
+        dataset_harmonic = dataset_harmonic_300mm
+        time_stamp_base = time_stamp_base_300mm 
+        time_stamp_harmonic = time_stamp_harmonic_300mm
+
+    elif Length == 350:
+        dataset_base = dataset_base_350mm
+        dataset_harmonic = dataset_harmonic_350mm
+        time_stamp_base = time_stamp_base_350mm 
+        time_stamp_harmonic = time_stamp_harmonic_350mm
+
+    else: 
+        return print("Incorrect Length input")
+
+
+    data_base = preprocess.get_data(dataset_base)
+    data_harmonic = preprocess.get_data(dataset_harmonic)
+    
+    for noise in noise_lvl_list:
+        t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise, A1_mode, A2_mode, modes_base, modes_harmonic)
+
+
+
+
+
+
+
+"""
 # --- main pipeline -------------------------------------------------------------------
 
 # Reconstructed Signals
@@ -259,8 +349,8 @@ A_S2_wt, A_S4_wt = amps(result_base_wt, result_harmonic_wt)
 # --- Amplitudes difference ---
 """
 # max amp values inital wave (no noise, 200mm) 
-A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
-A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
+#A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
+#A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
 """
 S2_diff_stft, S4_diff_stft = A_diff(A_max_S2,A_max_S4, A_S2_stft, A_S4_stft)
 S2_diff_hht, S4_diff_hht = A_diff(A_max_S2,A_max_S4, A_S2_hht, A_S4_hht)
@@ -275,3 +365,4 @@ Beta_diff_wt = Beta_diff(A_S2_wt, A_S4_wt)
 print(f"A Difference(S2,S4) in %| stft:{S2_diff_stft, S4_diff_stft},  hht:{S2_diff_hht, S4_diff_hht},  wavelet:{S2_diff_wt, S4_diff_wt}")
 
 print(f"Beta difference| stft:{Beta_diff_stft},  hht:{Beta_diff_hht},  wavelet:{Beta_diff_wt}")
+"""
