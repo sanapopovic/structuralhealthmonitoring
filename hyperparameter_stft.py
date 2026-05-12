@@ -30,7 +30,7 @@ from transforms import SST_v2_processing
 # ═══════════════════════════════════════════════════════════════════════════
 
 # --- signal construction (mirrors despair.py) -------------------------------
-noise_level = 0     # 0 = clean, 1.5 = 150% noise
+noise_level = 0            # 0 = clean, 1.5 = 150% noise
 beta        = 6            # non-linearity parameter
 
 A1_mode = "S2 Propagated signal (nm)"   # base harmonic mode for β
@@ -162,11 +162,6 @@ def stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft
 
     return recon_harmonic_stft,recon_base_stft
 
-def _peak_snr(reference, recon):
-    noise = reference - recon
-    with np.errstate(divide="ignore"):
-        snr = 10 * np.log10(np.var(reference) / (np.var(noise) + 1e-30))
-    return snr
 
 def get_residuals(r_h,r_b,og_h,og_b,plot=False):
     og_full = og_h+og_b
