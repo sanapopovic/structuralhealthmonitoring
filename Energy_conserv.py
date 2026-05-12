@@ -106,7 +106,7 @@ imfs, residue = Hilbert_Huang_processing .emd(signal)
 inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
 fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name1)
 
-Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_harmonic)
+Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
 Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
 
 # Reconstruction Wavelet
@@ -137,14 +137,18 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
 # First subplot
 axes[0].plot(t,en)
-axes[0].set_title("Energy Error Error")
+axes[0].set_title("Energy Error")
+axes[0].set_xlabel("time [s]")
+axes[0].set_ylabel("Error [-]")
 axes[0].set_xlim(0,140)
-axes[0].set_ylim(0, 0.0002)
+#axes[0].set_ylim(0, 0.0002)
 
 # Second subplot
 axes[1].plot(t, signal)
 axes[1].plot(t, recon_H, "-")
 axes[1].set_title("Original Signal vs Reconstructed Signal")
+axes[1].set_xlabel("time [s]")
+axes[1].set_ylabel("Amplitude [nm]")
 axes[1].set_xlim(0,140)
 axes[1].set_ylim(-3,3)
 
