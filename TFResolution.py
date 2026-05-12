@@ -27,8 +27,21 @@ wlen = 1
 
 t = np.linspace(0,500e-6, 2500)
 signalSine = np.sin(2*np.pi * freq * t)
-hann = sp.signal.windows.hann(len(t))
-signalHannSine = signalSine * hann
+
+total_samples = len(t)
+window_length = total_samples // 4        # half the total length
+pad = (total_samples - window_length) // 2  # equal padding on each side
+
+hann = sp.signal.windows.hann(window_length)
+padded_hann = np.concatenate([
+    np.zeros(pad),
+    hann,
+    np.zeros(total_samples - window_length - pad)  # handles odd-length remainders
+])
+
+#hann = sp.signal.windows.hann(len(t))
+#signalHannSine = signalSine * hann
+signalHannSine = signalSine * padded_hann
 
 plt.plot(t, signalHannSine)
 plt.show()
