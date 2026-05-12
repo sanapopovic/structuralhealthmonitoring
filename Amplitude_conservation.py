@@ -21,12 +21,21 @@ DICTIONARIES
 
 #------------------------------
 # Create initial signal modes: base S2 A1 A4, harmonic S2 S4 A1 A4
-#200mm
+
 modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 Propagated signal (nm)"]
 modes_harmonic = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 Propagated signal (nm)", "S4 Propagated signal (nm)"]
 
-time_stamp_base ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
-time_stamp_harmonic = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
+time_stamp_base_200mm ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
+time_stamp_harmonic_200mm = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
+
+time_stamp_base_250mm ={"S2": 60.9477,  "A1": 89.4603,  "A4": 189.506} #at 1.33 MHz
+time_stamp_harmonic_250mm = {"A1": 82.946,  "S4": 89.5719,  "S2": 94.8485,  "A4": 117.041} #at 2.66 MHz
+
+time_stamp_base_300mm ={"S2": 73.1372,  "A1": 107.352,  "A4": 227.407} #at 1.33 MHz
+time_stamp_harmonic_300mm = {"A1": 99.5352,  "S4": 107.486,  "S2": 113.818,  "A4": 140.449} #at 2.66 MHz
+
+time_stamp_base_350mm ={"S2": 85.3267,  "A1": 125.244,  "A4": 265.309} #at 1.33 MHz
+time_stamp_harmonic_350mm = {"A1": 116.124,  "S4": 125.401,  "S2": 132.788,  "A4": 163.857} #at 2.66 MHz
 
 
 noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
@@ -60,7 +69,7 @@ print(f"The max amplitude is {max_val} at {max_time} microsec.")
 plt.plot(t, signal)
 plt.title("Initial waveform: base(A1,S2,A4), harmonic(A1,S4,S2,A4)")
 plt.xlabel("Time in microsec")
-plt.show()
+#plt.show()
 
 
 # max amp values inital wave (no noise, 200mm) 
@@ -210,8 +219,8 @@ def A_diff(A_max_S2_init, A_max_S4_init, A_max_S2_after, A_max_S4_after):
     Outputs| Percental decrease of S2 and S4 amplitudes
     """
 
-    S2_diff = (A_max_S2_init - A_max_S2_after)/ A_max_S2_init
-    S4_diff = (A_max_S4_init - A_max_S4_after)/ A_max_S4_init
+    S2_diff = ((A_max_S2_init - A_max_S2_after)/ A_max_S2_init) * 100
+    S4_diff = ((A_max_S4_init - A_max_S4_after)/ A_max_S4_init) * 100
 
     return S2_diff, S4_diff
 
@@ -265,6 +274,6 @@ Beta_diff_hht = Beta_diff(A_S2_hht, A_S4_hht)
 Beta_diff_wt = Beta_diff(A_S2_wt, A_S4_wt)
 
 
-print(f"A Difference(S2,S4)| stft:{S2_diff_stft, S4_diff_stft},  hht:{S2_diff_hht, S4_diff_hht},  wavelet:{S2_diff_wt, S4_diff_wt}")
+print(f"A Difference(S2,S4) in %| stft:{S2_diff_stft, S4_diff_stft},  hht:{S2_diff_hht, S4_diff_hht},  wavelet:{S2_diff_wt, S4_diff_wt}")
 
 print(f"Beta difference| stft:{Beta_diff_stft},  hht:{Beta_diff_hht},  wavelet:{Beta_diff_wt}")
