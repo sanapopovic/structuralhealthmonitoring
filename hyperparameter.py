@@ -89,7 +89,7 @@ band_max_base = 1500000
 band_min_harmonic = 2300000
 band_max_harmonic = 2900000
 
-# Simulated Signal
+# Simulated Signal Creation
 
 data_harmonic = preprocess.get_data(dataset_harmonic)
 data_base = preprocess.get_data(dataset_base)
@@ -102,12 +102,12 @@ fs = (1.0 / dt)*(10**6)
 
 # Reconstruction HHT
 
-imfs, residue = Hilbert_Huang_processing .emd(signal)
-inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
-fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name1)
+#imfs, residue = Hilbert_Huang_processing .emd(signal)
+#inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
+#fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name1)
 
-Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
-Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
+#Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
+#Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
 
 # Reconstruction Wavelet
 
@@ -118,34 +118,25 @@ Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f
 plt.plot(t, signal)
 plt.show()
 
-fig, ax = plt.subplots(2, 1)
-ax[0].plot(t, Recon_base_H)
-ax[0].set_title("Base Reconstruction")
+#fig, ax = plt.subplots(2, 1)
+#ax[0].plot(t, Recon_base_H)
+#ax[0].set_title("Base Reconstruction")
 
 
-ax[1].plot(t, Recon_harmonic_H)
-ax[1].set_title("Harmonic Reconstruction")
+#ax[1].plot(t, Recon_harmonic_H)
+#ax[1].set_title("Harmonic Reconstruction")
 
-plt.tight_layout()
-plt.show()
+#plt.tight_layout()
+#plt.show()
 
-recon_H = Recon_base_H + Recon_harmonic_H
+#recon_H = Recon_base_H + Recon_harmonic_H
 
-en = ((np.abs(recon_H-signal))**2)/(np.sum(signal**2))
 
 fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
-# First subplot
-axes[0].plot(t,en)
-axes[0].set_title("Energy Error")
-axes[0].set_xlabel("time [s]")
-axes[0].set_ylabel("Error [-]")
-axes[0].set_xlim(0,140)
-#axes[0].set_ylim(0, 0.0002)
-
 # Second subplot
 axes[1].plot(t, signal)
-axes[1].plot(t, recon_H, "-")
+#axes[1].plot(t, recon_H, "-")
 axes[1].set_title("Original Signal vs Reconstructed Signal")
 axes[1].set_xlabel("time [s]")
 axes[1].set_ylabel("Amplitude [nm]")
