@@ -43,9 +43,10 @@ padded_hann = np.concatenate([
 #signalHannSine = signalSine * hann
 signalHannSine = signalSine * padded_hann
 
-plt.plot(t, signalHannSine)
-plt.show()
-plt.plot(t, signalSine)
-plt.show()
+def plot_signals(t,signalHannSine, signalSine):
+    plt.plot(t, signalHannSine)
+    plt.show()
+    plt.plot(t, signalSine)
+    plt.show()
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
