@@ -16,6 +16,7 @@
 import numpy as np
 import sys
 import os
+import matplotlib.pyplot as plt
 
 # ── make sure the project root is on the path ──────────────────────────────
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -188,8 +189,32 @@ def _peak_snr(reference, recon):
         snr = 10 * np.log10(np.var(reference) / (np.var(noise) + 1e-30))
     return snr
 
+def get_residuals(r_h,r_b,og_h,og_b):
+    og_full = og_h+og_b
+    r_full = r_h+r_b 
+    h_error = abs(r_h-og_h)
+    b_error = abs(r_b-og_b)
+    full_error = abs(r_full-og_full)
+
+    fig,ax = plt.subplot(1,3,figsize(10,5))
+    ax[0].plot(t,h_error)
+    ax[0].set_title("Harmonic Error")
+    ax[1].plot(t, b_error)
+    ax[1].set_title("Base Error")
+    ax[2].plot(t,full_error)
+    ax[2].set_title("Totall Error")
+
+    plt.tight_layout()
+    plt.savefig("plots/abs_errors.png", dpi=300)
+    return h_error,b_error,full_error
+
+
+harmonic_error, base_error, total_error = get_residuals(
+    recon_harmonic_stft,recon_base_stft,gt_harmonic,gt_base)
+
 print("\n Reconstruction quality (compared against GT components)")
 print(f"  STFT base band SNR     : {_peak_snr(gt_base,     recon_base_stft):+.1f} dB")
 print(f"  STFT harmonic SNR      : {_peak_snr(gt_harmonic, recon_harmonic_stft):+.1f} dB")
 
 print("\nDone — all plots saved to plots/")
+
