@@ -286,7 +286,7 @@ def A_max_S4_init(data_base, data_harmonic, noise_level):
 
 # --- Main function -----------------------------------------------
 noise_lvl_list = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
-def Main(Length,,,beta = 6):
+def Main(Length,beta = 6):
 
     if Length == 200:
         dataset_base = dataset_base_200mm
@@ -319,6 +319,12 @@ def Main(Length,,,beta = 6):
     data_base = preprocess.get_data(dataset_base)
     data_harmonic = preprocess.get_data(dataset_harmonic)
     
+    amp_diff_stft_list = [] #in %
+    amp_diff_hht_list = [] #in %
+    amp_diff_wt_list = [] #in %
+    beta_diff_stft_list = []
+    beta_diff_hht_list = []
+    beta_diff_wt_list = []
     for noise in noise_lvl_list:
         #Create signal
         t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise, A1_mode, A2_mode, modes_base, modes_harmonic)
@@ -326,6 +332,51 @@ def Main(Length,,,beta = 6):
         #Find max initial amplitudes
         A_max_S2 = A_max_S2_init(data_base, data_harmonic,noise)
         A_max_S4 = A_max_S4_init(data_base, data_harmonic,noise)
+
+        #Implement transforms
+        recon_base_stft, recon_harmonic_stft = STFT(t, signal)
+        recon_base_hht, recon_harmonic_hht = HHT(t, signal)
+        recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
+
+        #Mode decomposition (time of arrival)
+        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft)
+        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht)
+        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt)
+
+        #Amplitudes of decomposed S2 and S4
+        A_S2_stft, A_S4_stft = amps(result_base_stft, result_harmonic_stft)
+        A_S2_hht, A_S4_hht = amps(result_base_hht, result_harmonic_hht)
+        A_S2_wt, A_S4_wt = amps(result_base_wt, result_harmonic_wt)
+
+        #Amplitudes difference calculation
+        S2_diff_stft, S4_diff_stft = A_diff(A_max_S2,A_max_S4, A_S2_stft, A_S4_stft) #in %
+        S2_diff_hht, S4_diff_hht = A_diff(A_max_S2,A_max_S4, A_S2_hht, A_S4_hht) #in %
+        S2_diff_wt, S4_diff_wt = A_diff(A_max_S2,A_max_S4, A_S2_wt, A_S4_wt) #in %
+
+        amp_diff_stft_list.append([S2_diff_stft, S4_diff_stft])
+        amp_diff_hht_list.append([S2_diff_hht, S4_diff_hht])
+        amp_diff_wt_list.append([S2_diff_wt, S4_diff_wt])
+
+        #Beta difference calculation
+        Beta_diff_stft = Beta_diff(A_S2_stft, A_S4_stft)
+        Beta_diff_hht = Beta_diff(A_S2_hht, A_S4_hht)
+        Beta_diff_wt = Beta_diff(A_S2_wt, A_S4_wt)
+
+        beta_diff_stft_list.append(Beta_diff_stft)
+        beta_diff_hht_list.append(Beta_diff_hht)
+        beta_diff_wt_list.append(Beta_diff_wt)
+
+
+    print(f"Amp difference stft:{amp_diff_stft_list}")
+    print(f"Amp difference hht:{amp_diff_hht_list}")
+    print(f"Amp difference wavelet:{amp_diff_wt_list}")
+    print("-------------------------------------")
+    print(f"Beta difference stft:{beta_diff_stft_list}")
+    print(f"Beta difference hht:{beta_diff_hht_list}")
+    print(f"Beta difference wavelet:{beta_diff_wt_list}")
+    
+    return amp_diff_stft_list, amp_diff_hht_list, amp_diff_wt_list, beta_diff_stft_list, beta_diff_hht_list, beta_diff_wt_list
+
 
         
 
