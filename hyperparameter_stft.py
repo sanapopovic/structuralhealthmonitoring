@@ -1,15 +1,13 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
-  test_sst.py  — standalone SST evaluation script
+  hyperparameter_stft.py  — standalone STFT+SST evaluation based on hyperparameters
   ─────────────────────────────────────────────────
   Run from the project root (same folder as preprocess.py / decomp.py).
 
   What this script produces
   ─────────────────────────
   plots/sst_stft_comparison.png   — STFT original vs SST side-by-side
-  plots/sst_cwt_comparison.png    — CWT  original vs SST side-by-side
   plots/sst_stft_reconstruction.png — base + harmonic band recon (STFT)
-  plots/sst_cwt_reconstruction.png  — base + harmonic band recon (CWT)
 
   All parameters are grouped at the top — edit freely.
 ═══════════════════════════════════════════════════════════════════════════════
@@ -31,7 +29,7 @@ from transforms import SST_v2_processing
 # ═══════════════════════════════════════════════════════════════════════════
 
 # --- signal construction (mirrors despair.py) -------------------------------
-noise_level = 0.2      # 0 = clean, 1.5 = 150% noise
+noise_level = 0     # 0 = clean, 1.5 = 150% noise
 beta        = 9            # non-linearity parameter
 
 A1_mode = "S2 Propagated signal (nm)"   # base harmonic mode for β
@@ -67,9 +65,6 @@ band_min_base      = 1_100_000   # Hz
 band_max_base      = 1_500_000
 band_min_harmonic  = 2_300_000
 band_max_harmonic  = 2_900_000
-
-# --- CWT wavelet -----------------------------------------------------------
-wavelet = "cmor3.0-1.0"
 
 # --- STFT parameters (from blind-decomp stage 1) ---------------------------
 stft_win_len = 128     # samples
@@ -183,23 +178,6 @@ SST_v2_processing.plot_reconstruction(
     name="sst_stft_reconstruction",
 )
 
-
-# --- DEBUG ---
-import pywt as _pywt
-_t = t * 1e-6
-_dt = float(np.mean(np.diff(_t)))
-_fc = _pywt.central_frequency(wavelet)
-_freqs = np.linspace(f_min_analyse, f_max_analyse, n_freq)
-_scales = _fc / (_freqs * _dt)
-_cwtmatr, _freqs_out = _pywt.cwt(signal, _scales, wavelet, sampling_period=_dt)
-
-_mask = (_freqs_out >= band_min_base) & (_freqs_out <= band_max_base)
-print("scales range:", _scales.min(), _scales.max())
-print("band scales:", _scales[_mask].min(), _scales[_mask].max(), "count:", _mask.sum())
-print("d_log_s_full:", np.mean(np.diff(np.log(_scales))))
-print("d_log_s_band:", np.mean(np.diff(np.log(_scales[_mask]))))
-print("gt_base max:", np.abs(gt_base).max())
-# --- END DEBUG ---
 # ═══════════════════════════════════════════════════════════════════════════
 #  QUICK SANITY CHECK  — print peak SNR of reconstructions
 # ═══════════════════════════════════════════════════════════════════════════
