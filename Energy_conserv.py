@@ -111,6 +111,30 @@ Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f
 
 # Reconstruction Wavelet
 
-wavelet_processing.wavelet_scalogram(t, signal, wavelet = wavelet, name= plot_name2, fmin_mhz= f_min_analyse, fmax_mhz= f_max_analyse, n_freqs= n_freq)
-Recon_base_W = wavelet_processing.reconstruct_frequency_band(t, signal, band_min=band_min_base,band_max=band_max_base, wavelet=wavelet, fmin=f_min_analyse, fmax=f_max_analyse, n_freqs=n_freq)
-Recon_harmonic_W = wavelet_processing.reconstruct_frequency_band(t, signal, band_min=band_min_harmonic,band_max=band_max_harmonic, wavelet=wavelet, fmin=f_min_analyse, fmax=f_max_analyse, n_freqs=n_freq)
+#wavelet_processing.wavelet_scalogram(t, signal, wavelet = wavelet, name= plot_name2, fmin_mhz= f_min_analyse, fmax_mhz= f_max_analyse, n_freqs= n_freq)
+#Recon_base_W = wavelet_processing.reconstruct_frequency_band(t, signal, band_min=band_min_base,band_max=band_max_base, wavelet=wavelet, fmin=f_min_analyse, fmax=f_max_analyse, n_freqs=n_freq)
+#Recon_harmonic_W = wavelet_processing.reconstruct_frequency_band(t, signal, band_min=band_min_harmonic,band_max=band_max_harmonic, wavelet=wavelet, fmin=f_min_analyse, fmax=f_max_analyse, n_freqs=n_freq)
+
+plt.plot(t, signal)
+plt.show()
+
+fig, ax = plt.subplots(2, 1)
+ax[0].plot(t, Recon_base_H)
+ax[0].set_title("Base Reconstruction")
+
+
+ax[1].plot(t, Recon_harmonic_H)
+ax[1].set_title("Harmonic Reconstruction")
+
+plt.tight_layout()
+plt.show()
+
+recon_H = Recon_base_H + Recon_harmonic_H
+
+en = ((np.abs(recon_H-signal))**2)/(np.sum(signal**2))
+plt.plot(t, en)
+plt.show()
+
+plt.plot(t, signal)
+plt.plot(t,recon_H)
+plt.show()
