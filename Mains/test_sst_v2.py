@@ -31,7 +31,7 @@ from transforms import SST_v2_processing
 # ═══════════════════════════════════════════════════════════════════════════
 
 # --- signal construction (mirrors despair.py) -------------------------------
-noise_level = 1       # 0 = clean, 1.5 = 150% noise
+noise_level = 0.2      # 0 = clean, 1.5 = 150% noise
 beta        = 9            # non-linearity parameter
 
 A1_mode = "S2 Propagated signal (nm)"   # base harmonic mode for β

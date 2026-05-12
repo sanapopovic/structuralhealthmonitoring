@@ -77,7 +77,7 @@ imfs, residue = Hilbert_Huang_processing .emd(signal)
 inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
 fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name)
 
-Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_harmonic)
+Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
 Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
 
 upper_env, lower_env, mean_env = d.sift(Recon_base_H)
