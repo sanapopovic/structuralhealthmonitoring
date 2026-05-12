@@ -98,17 +98,3 @@ plt.tight_layout()
 plt.show()
 print(max(signal))
 print(max(Recon_harmonic_W))
-
-#Jesse stuff
-"""
-# Plot initial waveform
-plt.clf()
-plt.plot(t, signal)
-plt.title("initial waveform")
-
-# Fix 1: You must specify a file name and format string inside savefig
-plt.savefig("initial_waveform.png") 
-
-# Fix 2: You must add this line to actually display the window on your screen
-plt.show() 
-"""
