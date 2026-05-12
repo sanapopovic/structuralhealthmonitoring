@@ -10,29 +10,28 @@ import matplotlib.pyplot as plt
 from transforms.wavelet_processing import wavelet_scalogram
 
 
-#All files should be uploaded as csv
-data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
+# #All files should be uploaded as csv
+# data = preprocess.get_data(r"Data/In-plane_A2_TemporalResponse@15.963MHzmm@200mm.csv")
 
-t = data["Propagation time (micsec)"] #time axis in microseconds for this experiment
-y = data["Sum Propagated signal (nm)"] #measured signal, in nanometres
+# t = data["Propagation time (micsec)"] #time axis in microseconds for this experiment
+# y = data["Sum Propagated signal (nm)"] #measured signal, in nanometres
 
-time, freq, amp = wavelet_scalogram(t, y, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
+# time, freq, amp = wavelet_scalogram(t, y, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
 
+#makes a sine wave
 
-
-# guesses = [] #in f-t
-# peaks = []
-
-# for g in guesses:
-# #define subdomain of amp through guess +-10 in both t and freq
-# #find global maximum
-#     peaks.append()
+#parameters
+freq = 1.33e5
+wlen = 250e-6
 
 
+t = np.linspace(0,500e-6, 2500)
+signalSine = np.sin(2*np.pi * freq * t)
+hann = sp.signal.windows.hann(wlen)
+signalHannSine = signalSine * hann
 
-#other method with scipy
+plt.plot(t, signalSine, signalHannSine)
+plt.show()
 
+#time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
 
-print(amp)
-
-# sp.signal.find_peaks(amp, distance=)
