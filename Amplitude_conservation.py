@@ -25,15 +25,13 @@ DICTIONARIES
 modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 Propagated signal (nm)"]
 modes_harmonic = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 Propagated signal (nm)", "S4 Propagated signal (nm)"]
 
+#--- Time of arrivals ---
 time_stamp_base_200mm ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
 time_stamp_harmonic_200mm = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
-
 time_stamp_base_250mm ={"S2": 60.9477,  "A1": 89.4603,  "A4": 189.506} #at 1.33 MHz
 time_stamp_harmonic_250mm = {"A1": 82.946,  "S4": 89.5719,  "S2": 94.8485,  "A4": 117.041} #at 2.66 MHz
-
 time_stamp_base_300mm ={"S2": 73.1372,  "A1": 107.352,  "A4": 227.407} #at 1.33 MHz
 time_stamp_harmonic_300mm = {"A1": 99.5352,  "S4": 107.486,  "S2": 113.818,  "A4": 140.449} #at 2.66 MHz
-
 time_stamp_base_350mm ={"S2": 85.3267,  "A1": 125.244,  "A4": 265.309} #at 1.33 MHz
 time_stamp_harmonic_350mm = {"A1": 116.124,  "S4": 125.401,  "S2": 132.788,  "A4": 163.857} #at 2.66 MHz
 
