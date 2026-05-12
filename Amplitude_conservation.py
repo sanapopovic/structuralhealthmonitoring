@@ -21,8 +21,8 @@ DICTIONARIES
 #------------------------------
 # Create initial signal modes: base S2 A1 A4, harmonic S2 S4 A1 A4
 #200mm
-modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 Propagated signal (nm)"]
-modes_harmonic = []
+modes_base = ["A4 Propagated signal (nm)", "A1 Propagated signal (nm)", "S2 Propagated signal (nm)"]
+modes_harmonic = ["A4 Propagated signal (nm)", "A1 Propagated signal (nm)", "S2 Propagated signal (nm)", "S4 Propagated signal (nm)"]
 
 time_stamp_base ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
 time_stamp_harmonic = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
@@ -62,4 +62,5 @@ t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, bet
 # Plot initial waveform
 plt.plot(t, signal)
 plt.title("initial waveform")
+plt.xlabel("Time in microsec")
 plt.show()
