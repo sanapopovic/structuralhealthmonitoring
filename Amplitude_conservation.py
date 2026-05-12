@@ -68,6 +68,39 @@ A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
 A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
 
 
+# Reconstruction of the signals for each transform
+#Input initial signal ---> output reconstructed signal base and reconstructed signal harmonic
+
+
+#--- HHT ---
+
+def HHT(t, signal):
+    #Hilbert-Huang Specific:
+    f_min_base = 1100000
+    f_max_base = 1500000
+
+    f_min_harmonic = 2300000
+    f_max_harmonic = 2900000
+
+    f_bins = 2000
+    t_bins = 600
+    log_amplitude = True
+
+
+    dt = np.mean(np.diff(t))
+    fs = (1.0 / dt)*(10**6)
+
+    imfs, residue = Hilbert_Huang_processing .emd(signal)
+
+    Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
+    Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
+
+    return Recon_base_H, Recon_harmonic_H
+
+
+#--- STFT + SST ---
+
+def STFT(t, signal):
 
 
 
