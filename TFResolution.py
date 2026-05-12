@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import scipy as sp
 import sys, os
-import transforms.sst_processing_v2 as sst_processing_v2
+import transforms.SST_v2_processing as sst_processing_v2
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import preprocess
 import transforms.stft_processing as stft_processing
@@ -101,6 +101,8 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
         amplitude_plot = 20 * np.log10(amplitude_plot + 1e-12)
 
     return t_plot,f,amplitude_plot
+
+
     
 
 
@@ -114,9 +116,10 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
 
 t_sin,f_sin,a_sin = STFT(t,signalSine,downsampling=1,hop=128,dB=False)
 t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
-t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst=sst_processing_v2.stft_sst(t,signalSine,plot=False)
-t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst=sst_processing_v2.stft_sst(t,signalHannSine,plot=False)
+t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst=sst_processing_v2.stft_sst(t,signalSine)
+t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst=sst_processing_v2.stft_sst(t,signalHannSine)
+t_sin_cwt_sst,f_sin_cwt_sst,a_sin_cwt_sst = sst_processing_v2.cwt_sst(t,signalSine)
+t_hann_cwt_sst,f_hann_cwt_sst,a_hann_cwt_sst = sst_processing_v2.cwt_sst(t,signalHannSine)
 plot_signals_stft(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
 #plot_signals_stft_sst(t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst,t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst)
 
-#time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
