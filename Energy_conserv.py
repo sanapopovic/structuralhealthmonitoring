@@ -41,16 +41,16 @@ WILL BE INCLUDED IN THE SIGNAL. NEVER ALTER THE LISTS AND DICTIONARIES ABOVE!!!!
 THE MODES YOU WANT TO BE FOUND IN THE SIGNAL SHOULD BE INCLUDED IN time_stamp AS A DICTIONARY
 
 '''
-modes_harmonic = ["S2 Propagated signal (nm)", "S3 Propagated signal (nm)", "S4 Propagated signal (nm)",
-         "A3 Propagated signal (nm)"]
-modes_base = ["S2 Propagated signal (nm)", "S3 Propagated signal (nm)",
-                  "A3 Propagated signal (nm)",
+modes_harmonic = ["S2 Propagated signal (nm)", "S4 Propagated signal (nm)",
+         "A1 Propagated signal (nm)", "A4 Propagated signal (nm)"]
+modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)",
+                  "A4 Propagated signal (nm)"
                   ]
 
 
-noise_level = 0
+noise_level = 0.5
  #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
-beta = 7 #Non_Linearity Parameter: Realistic Range 6-12
+beta = 6 #Non_Linearity Parameter: Realistic Range 6-12
 
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
