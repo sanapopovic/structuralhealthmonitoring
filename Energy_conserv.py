@@ -132,9 +132,31 @@ plt.show()
 recon_H = Recon_base_H + Recon_harmonic_H
 
 en = ((np.abs(recon_H-signal))**2)/(np.sum(signal**2))
-plt.plot(t, en)
+
+fig, axes = plt.subplots(2, 1, figsize=(10, 4))
+
+# First subplot
+axes[0].plot(t,en)
+axes[0].set_title("Energy Error Error")
+axes[0].set_xlim(0,140)
+axes[0].set_ylim(0, 0.0002)
+
+# Second subplot
+axes[1].plot(t, signal)
+axes[1].plot(t, recon_H, "-")
+axes[1].set_title("Original Signal vs Reconstructed Signal")
+axes[1].set_xlim(0,140)
+axes[1].set_ylim(-3,3)
+
+# Adjust layout
+plt.tight_layout()
+
+# Show figure
 plt.show()
 
-plt.plot(t, signal)
-plt.plot(t,recon_H)
-plt.show()
+#plt.plot(t, en)
+#plt.show()
+
+#plt.plot(t, signal)
+#plt.plot(t, recon_H)
+#plt.show()

@@ -10,6 +10,7 @@ import re
 import decomp as d
 from transforms import Hilbert_Huang_processing 
 from transforms import wavelet_processing
+from scipy.signal import find_peaks
 
 """
 DICTIONARIES
@@ -21,8 +22,8 @@ DICTIONARIES
 #------------------------------
 # Create initial signal modes: base S2 A1 A4, harmonic S2 S4 A1 A4
 #200mm
-modes_base = ["A4 Propagated signal (nm)", "A1 Propagated signal (nm)", "S2 Propagated signal (nm)"]
-modes_harmonic = ["A4 Propagated signal (nm)", "A1 Propagated signal (nm)", "S2 Propagated signal (nm)", "S4 Propagated signal (nm)"]
+modes_base = []
+modes_harmonic = ["S4 Propagated signal (nm)"]
 
 time_stamp_base ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
 time_stamp_harmonic = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
@@ -59,8 +60,21 @@ data_base = preprocess.get_data(dataset_base)
 t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
 
 
-# Plot initial waveform
+
+# ---Finds the amplitude (Max value) ---
+max_idx = np.argmax(signal) # Finds the array index of the highest value
+max_time = t[max_idx]            # Gets the corresponding time
+max_val = signal[max_idx]   # Gets the highest amplitude value
+
+print(f"The max amplitude is {max_val} at {max_time} microsec.")
+
+# Plot waveform
 plt.plot(t, signal)
-plt.title("initial waveform")
+plt.title("waveform S4")
 plt.xlabel("Time in microsec")
 plt.show()
+
+
+# max amp values inital wave
+A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
+A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
