@@ -1,5 +1,5 @@
 from transforms.wavelet_processing import wavelet_scalogram
-
+import pandas as pd
 import numpy as np
 import scipy as sp
 import sys, os
@@ -21,17 +21,82 @@ from transforms.wavelet_processing import wavelet_scalogram
 #makes a sine wave
 
 #parameters
-freq = 1.33e5
-wlen = 250e-6
+freq = 1.33e6
+wlen = 1
 
 
 t = np.linspace(0,500e-6, 2500)
 signalSine = np.sin(2*np.pi * freq * t)
-hann = sp.signal.windows.hann(wlen)
-signalHannSine = signalSine * hann
 
-plt.plot(t, signalSine, signalHannSine)
-plt.show()
+total_samples = len(t)
+window_length = total_samples // 4        # half the total length
+pad = (total_samples - window_length) // 2  # equal padding on each side
+
+hann = sp.signal.windows.hann(window_length)
+padded_hann = np.concatenate([
+    np.zeros(pad),
+    hann,
+    np.zeros(total_samples - window_length - pad)  # handles odd-length remainders
+])
+
+#hann = sp.signal.windows.hann(len(t))
+#signalHannSine = signalSine * hann
+signalHannSine = signalSine * padded_hann
+
+def plot_signals(t,signalHannSine, signalSine):
+    plt.subplot(1,2,1)
+    plt.plot(t, signalHannSine)
+    plt.subplot(1,2,2)
+    plt.plot(t, signalSine)
+    plt.show()
+
+
+def wavelet(t,signal):
+    print("lol")
+    
+def SST(t,signal):
+    print("lol")
+
+def STFT(t,signal,downsampling=1,hop=128,dB=False):
+    ft, I, fs = stft_processing.stft(signal, t,win_length =256)
+
+    # Convert Pandas objects to NumPy arrays if needed
+    if isinstance(ft, (pd.DataFrame, pd.Series)):
+        ft = ft.to_numpy()
+
+    # Compute amplitude from complex STFT
+    amplitude = np.abs(ft)
+
+    # Frequency and time axes
+    n_freq, n_time = amplitude.shape
+    f = np.linspace(0, fs/2, n_freq)
+    t_seg = np.arange(n_time) * hop / fs
+
+    # Apply downsampling along the time axis
+    t_plot = t_seg[::downsampling]
+    amplitude_plot = amplitude[:, ::downsampling]
+
+    # Convert to dB if requested
+    if dB:
+        amplitude_plot = 20 * np.log10(amplitude_plot + 1e-12)
+
+    # Create plots directory
+    #folder = "plots"
+    #os.makedirs(folder, exist_ok=True)
+
+    # Plot
+    plt.figure(figsize=(10, 4))
+    plt.pcolormesh(t_plot, f, amplitude_plot, shading='gouraud')
+    plt.xlabel("Time [ms]")
+    plt.ylabel("Frequency [MHz]")
+    plt.title("stft_plot")
+    plt.colorbar(label='Amplitude (dB)' if dB else 'Amplitude')
+    plt.tight_layout()
+    plt.show()
+    
+
+
+STFT(t,signalSine,downsampling=1,hop=128,dB=False)
+STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
-
