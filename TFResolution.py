@@ -49,4 +49,11 @@ def plot_signals(t,signalHannSine, signalSine):
     plt.plot(t, signalSine)
     plt.show()
 
+def wavelet(t,signal):
+
+def SST(t,signal):
+
+def STFT(t,signal):
+
+
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
