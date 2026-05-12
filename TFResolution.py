@@ -22,16 +22,15 @@ from transforms.wavelet_processing import wavelet_scalogram
 
 #parameters
 freq = 1.33e5
-wlen = 250e-6
+wlen = 1
 
 
 t = np.linspace(0,500e-6, 2500)
 signalSine = np.sin(2*np.pi * freq * t)
-hann = sp.signal.windows.hann(wlen)
+hann = sp.signal.windows.hann(len(t))
 signalHannSine = signalSine * hann
 
 plt.plot(t, signalSine, signalHannSine)
 plt.show()
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
-
