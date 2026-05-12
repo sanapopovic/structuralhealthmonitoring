@@ -30,7 +30,9 @@ signalSine = np.sin(2*np.pi * freq * t)
 hann = sp.signal.windows.hann(len(t))
 signalHannSine = signalSine * hann
 
-plt.plot(t, signalSine, signalHannSine)
+plt.plot(t, signalHannSine)
+plt.show()
+plt.plot(t, signalSine)
 plt.show()
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
