@@ -137,14 +137,16 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
 # First subplot
 axes[0].plot(t,en)
-axes[0].set_title("Left Plot")
-#axes[0].set_xlim(40,110)
+axes[0].set_title("Energy Error Error")
+axes[0].set_xlim(0,140)
+axes[0].set_ylim(0, 0.0002)
 
 # Second subplot
-axes[1].plot(t, recon_H)
 axes[1].plot(t, signal)
-axes[1].set_title("Right Plot")
-#axes[1].set_xlim(40,110)
+axes[1].plot(t, recon_H, "-")
+axes[1].set_title("Original Signal vs Reconstructed Signal")
+axes[1].set_xlim(0,140)
+axes[1].set_ylim(-3,3)
 
 # Adjust layout
 plt.tight_layout()
