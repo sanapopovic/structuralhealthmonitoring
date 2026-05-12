@@ -209,15 +209,15 @@ def process_error(recon_harmonic,recon_base):
 # =============================================================
 
 #plot signal
-a,b = stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic,plot=True)
+#a,b = stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic,plot=True)
 
 
 #options: stft_win_len, stft_hop_len, stft_n_fft
-parameter = "lol"
-#options: win_len = 100, hop_len = 2, n_fft = 500
-eval_min = 500
-#options: win_len = 150, hop_len = 8, n_fft = 550
-eval_max = 550
+parameter = "stft_n_fft"
+#options: win_len = 50, hop_len = 1, n_fft = 450
+eval_min = 450
+#options: win_len = 200, hop_len = 10, n_fft = 600
+eval_max = 600
 
 #stft_win_len = 128     # samples
 #stft_hop_len = 2
@@ -244,8 +244,7 @@ if parameter == "stft_hop_len":
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
     plt.plot(par,t_error_lst,color="green",label="Total Error")
-    plt.title(f"Errors vs {parameter}")
-    plt.xlabel(parameter)
+    plt.xlabel("Hop Length")
     plt.ylabel("Summed Error")
     plt.legend()
     plt.tight_layout()
@@ -273,8 +272,7 @@ if parameter == "stft_win_len":
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
     plt.plot(par,t_error_lst,color="green",label="Total Error")
-    plt.title(f"Errors vs {parameter}")
-    plt.xlabel(parameter)
+    plt.xlabel("Window Length")
     plt.ylabel("Summed Error")
     plt.legend()
     plt.tight_layout()
@@ -302,8 +300,7 @@ if parameter == "stft_n_fft":
     plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
     plt.plot(par,b_error_lst,color="red",label="Base Error")
     plt.plot(par,t_error_lst,color="green",label="Total Error")
-    plt.title(f"Errors vs {parameter}")
-    plt.xlabel(parameter)
+    plt.xlabel("n_fft")
     plt.ylabel("Summed Error")
     plt.legend()
     plt.tight_layout()
