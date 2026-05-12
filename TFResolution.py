@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import scipy as sp
 import sys, os
+import transforms.sst_processing_v2 as sst_processing_v2
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import preprocess
 import transforms.stft_processing as stft_processing
@@ -43,7 +44,7 @@ padded_hann = np.concatenate([
 #signalHannSine = signalSine * hann
 signalHannSine = signalSine * padded_hann
 
-def plot_signals(t1,f1,a1,t2,f2,a2):
+def plot_signals_stft(t1,f1,a1,t2,f2,a2):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
     ax1.pcolormesh(t1, f1, a1, shading='gouraud')
@@ -58,11 +59,27 @@ def plot_signals(t1,f1,a1,t2,f2,a2):
     plt.show()
 
 
+def plot_signals_stft_sst(t1,f1,a1,t2,f2,a2,fmin=1e6,fmax=4.5e6):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    ax1.pcolormesh(t1, f1/ 1e6, a1, shading="gouraud")
+    ax1.set_xlabel("Time [ms]")
+    ax1.set_ylabel("Frequency [MHz]")
+    ax1.set_ylim(fmin / 1e6, fmax / 1e6)
+
+    ax2.pcolormesh(t2, f2/ 1e6, a2, shading="gouraud")
+    ax2.set_xlabel("Time [ms]")
+    ax2.set_ylabel("Frequency [MHz]")
+    ax2.set_ylim(fmin / 1e6, fmax / 1e6)
+
+    plt.tight_layout()
+    plt.show()
+
+
+
 def wavelet(t,signal):
     print("lol")
     
-def SST(t,signal):
-    print("lol")
+
 
 def STFT(t,signal,downsampling=1,hop=128,dB=False):
     ft, I, fs = stft_processing.stft(signal, t,win_length =256)
@@ -91,8 +108,19 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
     
 
 
+
+
+
+
+
+
+
+
 t_sin,f_sin,a_sin = STFT(t,signalSine,downsampling=1,hop=128,dB=False)
 t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
-plot_signals(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
+t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst=sst_processing_v2.stft_sst(t,signalSine,plot=False)
+t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst=sst_processing_v2.stft_sst(t,signalHannSine,plot=False)
+plot_signals_stft(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
+plot_signals_stft_sst(t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst,t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst)
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
