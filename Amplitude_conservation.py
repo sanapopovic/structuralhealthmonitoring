@@ -143,8 +143,44 @@ def STFT(t, signal):
     return recon_base_stft, recon_harmonic_stft
 
 
-#--- STFT + SST ---
+#--- Wavelet + SST ---
 
+def Wavelet(t, signal):
+    # --- CWT wavelet -----------------------------------------------------------
+    wavelet = "cmor3.0-1.0"
+
+    f_min_analyse = 1.0e6      # Hz — lower bound for TF display
+    f_max_analyse = 4.5e6      # Hz — upper bound for TF display
+    n_freq        = 400        # frequency bins (CWT)
+
+    band_min_base      = 1_100_000   # Hz
+    band_max_base      = 1_500_000
+    band_min_harmonic  = 2_300_000
+    band_max_harmonic  = 2_900_000
+
+    # --- band reconstructions ---
+    recon_base_cwt = SST_v2_processing.reconstruct_band_cwt(
+        t, signal,
+        band_min=band_min_base,
+        band_max=band_max_base,
+        wavelet=wavelet,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        n_freqs=n_freq,
+    )
+
+    print("    Reconstructing harmonic band (CWT) …")
+    recon_harmonic_cwt = SST_v2_processing.reconstruct_band_cwt(
+        t, signal,
+        band_min=band_min_harmonic,
+        band_max=band_max_harmonic,
+        wavelet=wavelet,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        n_freqs=n_freq,
+    )
+
+    return recon_base_cwt, recon_harmonic_cwt
 
 
 """
