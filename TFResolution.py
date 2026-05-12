@@ -43,11 +43,18 @@ padded_hann = np.concatenate([
 #signalHannSine = signalSine * hann
 signalHannSine = signalSine * padded_hann
 
-def plot_signals(t,signalHannSine, signalSine):
-    plt.subplot(1,2,1)
-    plt.plot(t, signalHannSine)
-    plt.subplot(1,2,2)
-    plt.plot(t, signalSine)
+def plot_signals(t1,f1,a1,t2,f2,a2):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    ax1.pcolormesh(t1, f1, a1, shading='gouraud')
+    ax1.set_xlabel("Time [ms]")
+    ax1.set_ylabel("Frequency [MHz]")
+
+    ax2.pcolormesh(t2, f2, a2, shading='gouraud')
+    ax2.set_xlabel("Time [ms]")
+    ax2.set_ylabel("Frequency [MHz]")
+
+    plt.tight_layout()
     plt.show()
 
 
@@ -80,23 +87,12 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
     if dB:
         amplitude_plot = 20 * np.log10(amplitude_plot + 1e-12)
 
-    # Create plots directory
-    #folder = "plots"
-    #os.makedirs(folder, exist_ok=True)
-
-    # Plot
-    plt.figure(figsize=(10, 4))
-    plt.pcolormesh(t_plot, f, amplitude_plot, shading='gouraud')
-    plt.xlabel("Time [ms]")
-    plt.ylabel("Frequency [MHz]")
-    plt.title("stft_plot")
-    plt.colorbar(label='Amplitude (dB)' if dB else 'Amplitude')
-    plt.tight_layout()
-    plt.show()
+    return t_plot,f,amplitude_plot
     
 
 
-STFT(t,signalSine,downsampling=1,hop=128,dB=False)
-STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
+t_sin,f_sin,a_sin = STFT(t,signalSine,downsampling=1,hop=128,dB=False)
+t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
+plot_signals(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
 
 #time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
