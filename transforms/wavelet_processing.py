@@ -134,9 +134,6 @@ def wavelet_scalogram(
     plt.close()
 
     print(f"Plot saved to {filepath}")
-<<<<<<< HEAD
-    return t, freqs, power
-=======
 
 def reconstruct_frequency_band(
     t_us,
@@ -202,4 +199,3 @@ def reconstruct_frequency_band(
     return reconstructed
 
 
->>>>>>> a5a65b441ae3c366d1d74c339f8969c613bf0b40
