@@ -68,8 +68,8 @@ A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
 A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
 
 
-# Reconstruction of the signals for each transform
-#Input initial signal ---> output reconstructed signal base and reconstructed signal harmonic
+# --- Reconstruction of the signals for each transform ---
+"""Input initial signal ---> output reconstructed signal base and reconstructed signal harmonic""" 
 
 
 #--- HHT ---
@@ -187,6 +187,10 @@ recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
 # --- time of arrival ---
 
 def ToA(recon_base, recon_harmonic):
+    """Applies time of arrival, 
+    Inputs| band reconstruction of base frequency and 2nd harmonic 
+    outputs| 'mode': {peak_index, peak_time, peak_value, time_offset}
+    """
     upper_env, lower_env, mean_env = d.sift(recon_base)
     result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
 
@@ -195,21 +199,25 @@ def ToA(recon_base, recon_harmonic):
 
     return result_base_H, result_harmonic_H
 
+# --- Amplitude of S2 and S4 ---
+
+def amps(result_base, result_harmonic):
+    """Recovers amplitude values of S2 and S4"""
+    S2_peak = result_base['S2']['peak_value']
+    S4_peak = result_harmonic['S4']['peak_value']
+    return S2_peak, S4_peak
 
 
-"""
-# --- time of arrival ---
-#input reconstructed signal base
-#output 
+# --- Amplitude difference --- 
 
-upper_env, lower_env, mean_env = d.sift(---input---)
-result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
+def A_diff(A_max_S2_init, A_max_S4_init, A_max_S2_after, A_max_S4_after):
+    """Finds difference (decrease) of the S2 and S4 max amplitudes (in % of initial amplitude value),
+    Inputs| Max amplitude values before and after reconstruction
+    Outputs| Percental decrease of S2 and S4 amplitudes
+    """
 
+    S2_diff = (A_max_S2_init - A_max_S2_after)/ A_max_S2_init
+    S4_diff = (A_max_S4_init - A_max_S4_after)/ A_max_S4_init
 
-#input reconstructed signal harmonic
-#output
+    return S2_diff, S4_diff
 
-upper_env, lower_env, mean_env = d.sift(---input---)
-result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
-
-"""
