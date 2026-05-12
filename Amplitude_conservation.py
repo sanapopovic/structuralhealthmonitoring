@@ -178,12 +178,6 @@ def Wavelet(t, signal):
     return recon_base_cwt, recon_harmonic_cwt
 
 
-# Reconstructed Signals
-recon_base_stft, recon_harmonic_stft = STFT(t, signal)
-recon_base_hht, recon_harmonic_hht = HHT(t, signal)
-recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
-
-
 # --- time of arrival ---
 
 def ToA(recon_base, recon_harmonic):
@@ -236,3 +230,41 @@ def Beta_diff(Amp_S2, Amp_S4, beta_predefined=6):
 
     return beta_diff
 
+
+
+# --- main pipeline -------------------------------------------------------------------
+
+# Reconstructed Signals
+recon_base_stft, recon_harmonic_stft = STFT(t, signal)
+recon_base_hht, recon_harmonic_hht = HHT(t, signal)
+recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
+
+# --- Mode decomposition ---
+result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft)
+result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht)
+result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt)
+
+# --- Amplitudes S2 and S4 ---
+A_S2_stft, A_S4_stft = amps(result_base_stft, result_harmonic_stft)
+A_S2_hht, A_S4_hht = amps(result_base_hht, result_harmonic_hht)
+A_S2_wt, A_S4_wt = amps(result_base_wt, result_harmonic_wt)
+
+# --- Amplitudes difference ---
+"""
+# max amp values inital wave (no noise, 200mm) 
+A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
+A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
+"""
+S2_diff_stft, S4_diff_stft = A_diff(A_max_S2,A_max_S4, A_S2_stft, A_S4_stft)
+S2_diff_hht, S4_diff_hht = A_diff(A_max_S2,A_max_S4, A_S2_hht, A_S4_hht)
+S2_diff_wt, S4_diff_wt = A_diff(A_max_S2,A_max_S4, A_S2_wt, A_S4_wt)
+
+# --- Beta difference ---
+Beta_diff_stft = Beta_diff(A_S2_stft, A_S4_stft)
+Beta_diff_hht = Beta_diff(A_S2_hht, A_S4_hht)
+Beta_diff_wt = Beta_diff(A_S2_wt, A_S4_wt)
+
+
+print(f"A Difference(S2,S4)| stft:{S2_diff_stft, S4_diff_stft},  hht:{S2_diff_hht, S4_diff_hht},  wavelet:{S2_diff_wt, S4_diff_wt}")
+
+print(f"Beta difference| stft:{Beta_diff_stft},  hht:{Beta_diff_hht},  wavelet:{Beta_diff_wt}")
