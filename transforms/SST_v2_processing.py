@@ -404,9 +404,11 @@ def reconstruct_band_cwt(
     if scales_band.size < 2:
         return np.zeros_like(sig)
 
-    # 1/a (not 1/a²) — correct for complex analytic wavelets (cmor, cgau, etc.)
-    recon = np.real(np.sum(cwt_band / scales_band[:, None], axis=0))
-    recon *= np.mean(np.diff(np.log(scales_band)))
+    # Torrence & Compo 1998 — correct formula for analytic wavelets:
+    # sum( W(a,t) * da/a )
+    da   = np.abs(np.diff(scales_band))
+    da   = np.append(da, da[-1])          # pad to match length
+    recon = np.real(np.sum(cwt_band * da[:, None] / scales_band[:, None], axis=0))
 
     return recon
 

@@ -41,16 +41,16 @@ WILL BE INCLUDED IN THE SIGNAL. NEVER ALTER THE LISTS AND DICTIONARIES ABOVE!!!!
 THE MODES YOU WANT TO BE FOUND IN THE SIGNAL SHOULD BE INCLUDED IN time_stamp AS A DICTIONARY
 
 '''
-modes_harmonic = ["S2 Propagated signal (nm)", "S3 Propagated signal (nm)", "S4 Propagated signal (nm)",
-         "A3 Propagated signal (nm)"]
-modes_base = ["S2 Propagated signal (nm)", "S3 Propagated signal (nm)",
-                  "A3 Propagated signal (nm)",
+modes_harmonic = ["S2 Propagated signal (nm)", "S4 Propagated signal (nm)",
+         "A1 Propagated signal (nm)", "A4 Propagated signal (nm)"]
+modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)",
+                  "A4 Propagated signal (nm)"
                   ]
 
 
-noise_level = 0
+noise_level = 1.5
  #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
-beta = 7 #Non_Linearity Parameter: Realistic Range 6-12
+beta = 6 #Non_Linearity Parameter: Realistic Range 6-12
 
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
@@ -94,7 +94,9 @@ band_max_harmonic = 2900000
 data_harmonic = preprocess.get_data(dataset_harmonic)
 data_base = preprocess.get_data(dataset_base)
 
-t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+t, signal, data_used1 = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+
+t2, signal2, data_used2 = preprocess.create_signal(data_base, data_harmonic, beta, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
 
 
 dt = np.mean(np.diff(t))
@@ -106,7 +108,7 @@ imfs, residue = Hilbert_Huang_processing .emd(signal)
 inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
 fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name1)
 
-Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_harmonic)
+Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
 Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
 
 # Reconstruction Wavelet
@@ -131,10 +133,45 @@ plt.show()
 
 recon_H = Recon_base_H + Recon_harmonic_H
 
-en = ((np.abs(recon_H-signal))**2)/(np.sum(signal**2))
-plt.plot(t, en)
+en = ((np.abs(recon_H-signal2))**2)/(np.sum(signal2**2))
+
+fig, axes = plt.subplots(2, 1, figsize=(10, 4))
+
+# First subplot
+axes[0].plot(t, en)
+axes[0].set_title("Energy Error", fontsize=20)
+axes[0].set_xlabel("time [s]", fontsize=19)
+axes[0].set_ylabel("Error [-]", fontsize=18)
+axes[0].set_xlim(0, 140)
+# axes[0].set_ylim(0, 0.0002)
+axes[0].tick_params(axis='both', which='major', labelsize=18)
+
+# Second subplot
+axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
+axes[1].plot(t, recon_H, "-")
+axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
+axes[1].set_xlabel("time [s]", fontsize=19)
+axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
+axes[1].set_xlim(0, 140)
+axes[1].set_ylim(-3, 3)
+axes[1].tick_params(axis='both', which='major', labelsize=18)
+# Adjust layout
+plt.tight_layout()
+
+# Save figure with tight bounding box
+plt.savefig(
+    "HHT-noise-0-overlap.png",
+    dpi=300,
+    bbox_inches="tight",
+    pad_inches=0.05
+)
+
+# Show figure
 plt.show()
 
-plt.plot(t, signal)
-plt.plot(t,recon_H)
-plt.show()
+#plt.plot(t, en)
+#plt.show()
+
+#plt.plot(t, signal)
+#plt.plot(t, recon_H)
+#plt.show()

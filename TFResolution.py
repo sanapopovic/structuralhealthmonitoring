@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import scipy as sp
 import sys, os
+import transforms.SST_v2_processing as sst_processing_v2
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import preprocess
 import transforms.stft_processing as stft_processing
@@ -24,7 +25,6 @@ from transforms.wavelet_processing import wavelet_scalogram
 freq = 1.33e6
 wlen = 1
 
-
 t = np.linspace(0,500e-6, 2500)
 signalSine = np.sin(2*np.pi * freq * t)
 
@@ -38,12 +38,9 @@ padded_hann = np.concatenate([
     hann,
     np.zeros(total_samples - window_length - pad)  # handles odd-length remainders
 ])
-
-#hann = sp.signal.windows.hann(len(t))
-#signalHannSine = signalSine * hann
 signalHannSine = signalSine * padded_hann
 
-def plot_signals(t1,f1,a1,t2,f2,a2):
+def plot_signals_stft(t1,f1,a1,t2,f2,a2):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
     ax1.pcolormesh(t1, f1, a1, shading='gouraud')
@@ -58,11 +55,22 @@ def plot_signals(t1,f1,a1,t2,f2,a2):
     plt.show()
 
 
-def wavelet(t,signal):
-    print("lol")
-    
-def SST(t,signal):
-    print("lol")
+def plot_signals_stft_sst(t1,f1,a1,t2,f2,a2,fmin=1e6,fmax=4.5e6):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    ax1.pcolormesh(t1, f1/ 1e6, a1, shading="gouraud")
+    ax1.set_xlabel("Time [ms]")
+    ax1.set_ylabel("Frequency [MHz]")
+    ax1.set_ylim(fmin / 1e6, fmax / 1e6)
+
+    ax2.pcolormesh(t2, f2/ 1e6, a2, shading="gouraud")
+    ax2.set_xlabel("Time [ms]")
+    ax2.set_ylabel("Frequency [MHz]")
+    ax2.set_ylim(fmin / 1e6, fmax / 1e6)
+
+    plt.tight_layout()
+    plt.show()
+
+
 
 def STFT(t,signal,downsampling=1,hop=128,dB=False):
     ft, I, fs = stft_processing.stft(signal, t,win_length =256)
@@ -88,17 +96,15 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
         amplitude_plot = 20 * np.log10(amplitude_plot + 1e-12)
 
     return t_plot,f,amplitude_plot
-    
-def FFT(t, signal):
-    fft_output = np.fft.fft(signal)
-    frequencies = np.fft.fftfreq(len(t), d=t[1] - t[0])
-
-    return frequencies, fft_output
 
 t_sin,f_sin,a_sin = STFT(t,signalSine,downsampling=1,hop=128,dB=False)
 t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
-fftfreq, fftsin = FFT(t,signalHannSine)
-# plot_signals(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
-plt.scatter(fftfreq,(fftsin))
-plt.xlim(1.3e6,1.35e6)
-plt.show()
+t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst=sst_processing_v2.stft_sst(t,signalSine)
+t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst=sst_processing_v2.stft_sst(t,signalHannSine)
+t_sin_cwt_sst,f_sin_cwt_sst,a_sin_cwt_sst = sst_processing_v2.cwt_sst(t,signalSine)
+t_hann_cwt_sst,f_hann_cwt_sst,a_hann_cwt_sst = sst_processing_v2.cwt_sst(t,signalHannSine)
+plot_signals_stft(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
+#plot_signals_stft_sst(t_sin_stft_sst,f_sin_stft_sst,a_sin_stft_sst,t_hann_stft_sst,f_hann_stft_sst,a_hann_stft_sst)
+
+
+
