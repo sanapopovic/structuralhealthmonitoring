@@ -89,10 +89,16 @@ def STFT(t,signal,downsampling=1,hop=128,dB=False):
 
     return t_plot,f,amplitude_plot
     
+def FFT(t, signal):
+    fft_output = np.fft.fft(signal)
+    frequencies = np.fft.fftfreq(len(t), d=t[1] - t[0])
 
+    return frequencies, fft_output
 
 t_sin,f_sin,a_sin = STFT(t,signalSine,downsampling=1,hop=128,dB=False)
 t_hann,f_hann,a_hann=STFT(t,signalHannSine,downsampling=1,hop=128,dB=False)
-plot_signals(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
-
-#time, freq, amp = wavelet_scalogram(t, signal, wavelet = 'cgau2', n_scales=100, name="wavelet_scalogram") #Runs the Continuous Wavelet Transform (CWT) using a complex Morlet wavelet
+fftfreq, fftsin = FFT(t,signalHannSine)
+# plot_signals(t_sin,f_sin,a_sin,t_hann,f_hann,a_hann)
+plt.scatter(fftfreq,(fftsin))
+plt.xlim(1.3e6,1.35e6)
+plt.show()
