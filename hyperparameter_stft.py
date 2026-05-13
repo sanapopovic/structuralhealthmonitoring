@@ -53,9 +53,9 @@ band_min_harmonic  = 2_300_000
 band_max_harmonic  = 2_900_000
 
 # --- STFT parameters (from blind-decomp stage 1) ---------------------------
-stft_win_len = 128     # samples
-stft_hop_len = 2
-stft_n_fft   = 512
+stft_win_len = 256     # samples
+stft_hop_len = 20
+stft_n_fft   = 2048
 
 # --- SST thresholds --------------------------------------------------------
 stft_gamma = 1e-6      # STFT bins weaker than this are not reassigned
@@ -207,15 +207,16 @@ def process_error(recon_harmonic,recon_base):
 # =============================================================
 
 #plot signal
-#a,b = stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic,plot=True)
-
+a,b = stft_sst(t,signal,f_min_analyse,f_max_analyse,stft_win_len,stft_hop_len,stft_n_fft,stft_gamma,band_min_base,band_max_base,log_scale,gt_base,gt_harmonic,plot=True)
+sum_h_error,sum_b_error,sum_t_error = process_error(a,b)
+print(f"harmonic error: {sum_h_error}, base error: {sum_b_error}, total error: {sum_t_error}")
 
 #options: stft_win_len, stft_hop_len, stft_n_fft
-parameter = "stft_n_fft"
-#options: win_len = 50, hop_len = 1, n_fft = 450
-eval_min = 450
-#options: win_len = 200, hop_len = 10, n_fft = 600
-eval_max = 600
+parameter = "none"
+#options: win_len = 50, hop_len = 1, n_fft = 1
+eval_min = 7
+#options: win_len = 200, hop_len = 10, n_fft = 10
+eval_max = 14
 
 #stft_win_len = 128     # samples
 #stft_hop_len = 2
@@ -290,10 +291,11 @@ if parameter == "stft_n_fft":
     par = []
     #loop over all values of parameters to consider
     for i in range(eval_min,eval_max):
+        k=2**i
         #get the reconstructed signal
         recon_harmonic_stft,recon_base_stft = stft_sst(
             t,signal,f_min_analyse,f_max_analyse,
-            stft_win_len,stft_hop_len,i,
+            stft_win_len,stft_hop_len,k,
             stft_gamma,band_min_base,band_max_base,
             log_scale,gt_base,gt_harmonic,plot=False)
         #get the summed errors and add them to the list
@@ -301,12 +303,12 @@ if parameter == "stft_n_fft":
         h_error_lst.append(sum_h_error)
         b_error_lst.append(sum_b_error)
         t_error_lst.append(sum_t_error)
-        par.append(i)
+        par.append(k)
     #plot the errors
     plt.figure(figsize=(12, 5))
-    plt.plot(par,h_error_lst,color="blue",label="Harmonic Error")
-    plt.plot(par,b_error_lst,color="red",label="Base Error")
-    plt.plot(par,t_error_lst,color="green",label="Total Error")
+    plt.plot(par,h_error_lst,color="blue",label="Harmonic Error",marker='o')
+    plt.plot(par,b_error_lst,color="red",label="Base Error",marker='o')
+    plt.plot(par,t_error_lst,color="green",label="Total Error",marker='o')
     plt.xlabel("n_fft")
     plt.ylabel("Summed Error")
     plt.legend()
