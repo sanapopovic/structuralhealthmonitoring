@@ -158,13 +158,7 @@ axes[1].tick_params(axis='both', which='major', labelsize=18)
 # Adjust layout
 plt.tight_layout()
 
-# Save figure with tight bounding box
-plt.savefig(
-    "HHT-noise-0-overlap.png",
-    dpi=300,
-    bbox_inches="tight",
-    pad_inches=0.05
-)
+
 
 # Show figure
 plt.show()
