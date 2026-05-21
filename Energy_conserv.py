@@ -162,6 +162,80 @@ recon_base_stft, recon_harmonic_stft = STFT(t, signal)
 #Recon_base_W = wavelet_processing.reconstruct_frequency_band(t, signal, band_min=band_min_base,band_max=band_max_base, wavelet=wavelet, fmin=f_min_analyse, fmax=f_max_analyse, n_freqs=n_freq)
 #Recon_harmonic_W = wavelet_processing.reconstruct_frequency_band(t, signal, band_min=band_min_harmonic,band_max=band_max_harmonic, wavelet=wavelet, fmin=f_min_analyse, fmax=f_max_analyse, n_freqs=n_freq)
 
+
+
+#Total error vs noise level
+error_WT = []
+error_HHT = []
+error_STFT = []
+
+noise_levels = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic
+    )
+
+    # STFT reconstruction
+    recon_base_stft, recon_harmonic_stft = STFT(t, signal)
+    recon_STFT = recon_base_stft + recon_harmonic_stft
+
+    # Normalized reconstruction error
+    error = np.sum(np.abs(recon_STFT - signal) ** 2) / np.sum(signal ** 2)
+    error_STFT.append(error)
+
+# Plot STFT
+plt.plot(noise_levels, error_STFT, marker='o')
+plt.xlabel("Noise Level")
+plt.ylabel("Normalized Reconstruction Error")
+plt.title("STFT Reconstruction Error vs Noise")
+plt.grid(True)
+plt.show()
+
+
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic
+    )
+
+    # HHT reconstruction
+    imfs, residue = Hilbert_Huang_processing .emd(signal)
+
+    Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
+    Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
+    recon_H = Recon_base_H + Recon_harmonic_H
+
+    # Normalized reconstruction error
+    error = np.sum(np.abs(recon_H - signal) ** 2) / np.sum(signal ** 2)
+    error_HHT.append(error)
+
+# Plot HHT
+plt.plot(noise_levels, error_HHT, marker='o')
+plt.xlabel("Noise Level")
+plt.ylabel("Normalized Reconstruction Error")
+plt.title("HHT Reconstruction Error vs Noise")
+plt.grid(True)
+plt.show()
+
+
 plt.plot(t, signal)
 plt.show()
 
