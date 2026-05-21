@@ -49,7 +49,7 @@ modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)",
                   ]
 
 
-noise_level = 0
+noise_level = 1.5
  #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
 beta = 6 #Non_Linearity Parameter: Realistic Range 6-12
 
