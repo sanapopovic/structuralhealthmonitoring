@@ -191,44 +191,19 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
 # HHT Reconstruction
 # First subplot
-# axes[0].plot(t, en)
-# axes[0].set_title("Energy Error", fontsize=20)
-# axes[0].set_xlabel("time [s]", fontsize=19)
-# axes[0].set_ylabel("Error [-]", fontsize=18)
-# axes[0].set_xlim(0, 140)
-# # axes[0].set_ylim(0, 0.0002)
-# axes[0].tick_params(axis='both', which='major', labelsize=18)
-
-# # Second subplot
-# axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
-# axes[1].plot(t, recon_H, "-")
-# axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
-# axes[1].set_xlabel("time [s]", fontsize=19)
-# axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
-# axes[1].set_xlim(0, 140)
-# axes[1].set_ylim(-3, 3)
-# axes[1].tick_params(axis='both', which='major', labelsize=18)
-# # Adjust layout
-# plt.tight_layout()
-
-# # Show figure
-# plt.show()
-
-
-#STFT Reconstruction
-# First subplot
-axes[0].plot(t, en_STFT)
+axes[0].plot(t, en)
 axes[0].set_title("Energy Error", fontsize=20)
-axes[0].set_xlabel("time [ms]", fontsize=19)
+axes[0].set_xlabel("time [s]", fontsize=19)
 axes[0].set_ylabel("Error [-]", fontsize=18)
 axes[0].set_xlim(0, 140)
+# axes[0].set_ylim(0, 0.0002)
 axes[0].tick_params(axis='both', which='major', labelsize=18)
 
 # Second subplot
 axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
-axes[1].plot(t, recon_STFT, "-")
+axes[1].plot(t, recon_H, "-")
 axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
-axes[1].set_xlabel("time [ms]", fontsize=19)
+axes[1].set_xlabel("time [s]", fontsize=19)
 axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
 axes[1].set_xlim(0, 140)
 axes[1].set_ylim(-3, 3)
@@ -238,6 +213,31 @@ plt.tight_layout()
 
 # Show figure
 plt.show()
+
+
+#STFT Reconstruction
+# First subplot
+# axes[0].plot(t, en_STFT)
+# axes[0].set_title("Energy Error", fontsize=20)
+# axes[0].set_xlabel("time [ms]", fontsize=19)
+# axes[0].set_ylabel("Error [-]", fontsize=18)
+# axes[0].set_xlim(0, 140)
+# axes[0].tick_params(axis='both', which='major', labelsize=18)
+
+# # Second subplot
+# axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
+# axes[1].plot(t, recon_STFT, "-")
+# axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
+# axes[1].set_xlabel("time [ms]", fontsize=19)
+# axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
+# axes[1].set_xlim(0, 140)
+# axes[1].set_ylim(-3, 3)
+# axes[1].tick_params(axis='both', which='major', labelsize=18)
+# # Adjust layout
+# plt.tight_layout()
+
+# # Show figure
+# plt.show()
 
 #plt.plot(t, en)
 #plt.show()
