@@ -9,7 +9,7 @@ import re
 import decomp as d
 from transforms import Hilbert_Huang_processing 
 from transforms import wavelet_processing
-from transforms import SST_v2_processing  
+from transforms import SST_v2_processing
 
 
 
@@ -49,7 +49,7 @@ modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)",
                   ]
 
 
-noise_level = 1.5
+noise_level = 0
  #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
 beta = 6 #Non_Linearity Parameter: Realistic Range 6-12
 
@@ -112,6 +112,50 @@ fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, ins
 Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
 Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
 
+# Reconstruction STFT
+def STFT(t, signal):
+    # --- time-frequency analysis -----------------------------------------------
+    f_min_analyse = 1.0e6      # Hz — lower bound for TF display
+    f_max_analyse = 4.5e6      # Hz — upper bound for TF display
+    n_freq        = 400        # frequency bins (CWT)
+
+    band_min_base      = 1_100_000   # Hz
+    band_max_base      = 1_500_000
+    band_min_harmonic  = 2_300_000
+    band_max_harmonic  = 2_900_000
+
+    # --- STFT parameters (from blind-decomp stage 1) ---------------------------
+    stft_win_len = 128     # samples
+    stft_hop_len = 2
+    stft_n_fft   = 512
+
+
+    # --- band reconstructions ---
+    recon_base_stft = SST_v2_processing.reconstruct_band_stft(
+        t, signal,
+        band_min=band_min_base,
+        band_max=band_max_base,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,
+    )
+
+    recon_harmonic_stft = SST_v2_processing.reconstruct_band_stft(
+        t, signal,
+        band_min=band_min_harmonic,
+        band_max=band_max_harmonic,
+        fmin=f_min_analyse,
+        fmax=f_max_analyse,
+        win_len=stft_win_len,
+        hop_len=stft_hop_len,
+        n_fft=stft_n_fft,
+    )
+
+    return recon_base_stft, recon_harmonic_stft
+
+recon_base_stft, recon_harmonic_stft = STFT(t, signal)
 # Reconstruction Wavelet
 
 #wavelet_processing.wavelet_scalogram(t, signal, wavelet = wavelet, name= plot_name2, fmin_mhz= f_min_analyse, fmax_mhz= f_max_analyse, n_freqs= n_freq)
@@ -120,6 +164,7 @@ Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f
 
 plt.plot(t, signal)
 plt.show()
+
 
 fig, ax = plt.subplots(2, 1)
 ax[0].plot(t, Recon_base_H)
@@ -132,12 +177,20 @@ ax[1].set_title("Harmonic Reconstruction")
 plt.tight_layout()
 plt.show()
 
+
 recon_H = Recon_base_H + Recon_harmonic_H
+
+
+recon_STFT = recon_base_stft + recon_harmonic_stft
 
 en = ((np.abs(recon_H-signal2))**2)/(np.sum(signal2**2))
 
+en_STFT = ((np.abs(recon_STFT-signal2))**2)/(np.sum(signal2**2))
+
 fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
+
+# HHT Reconstruction
 # First subplot
 axes[0].plot(t, en)
 axes[0].set_title("Energy Error", fontsize=20)
@@ -159,14 +212,103 @@ axes[1].tick_params(axis='both', which='major', labelsize=18)
 # Adjust layout
 plt.tight_layout()
 
-
-
 # Show figure
 plt.show()
 
-#plt.plot(t, en)
-#plt.show()
 
-#plt.plot(t, signal)
-#plt.plot(t, recon_H)
-#plt.show()
+#STFT Reconstruction
+# First subplot
+# axes[0].plot(t, en_STFT)
+# axes[0].set_title("Energy Error", fontsize=20)
+# axes[0].set_xlabel("time [ms]", fontsize=19)
+# axes[0].set_ylabel("Error [-]", fontsize=18)
+# axes[0].set_xlim(0, 140)
+# axes[0].tick_params(axis='both', which='major', labelsize=18)
+
+# # Second subplot
+# axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
+# axes[1].plot(t, recon_STFT, "-")
+# axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
+# axes[1].set_xlabel("time [ms]", fontsize=19)
+# axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
+# axes[1].set_xlim(0, 140)
+# axes[1].set_ylim(-3, 3)
+# axes[1].tick_params(axis='both', which='major', labelsize=18)
+# # Adjust layout
+# plt.tight_layout()
+
+# # Show figure
+# plt.show()
+
+#Total error vs noise level
+error_WT = []
+error_HHT = []
+error_STFT = []
+
+noise_levels = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic
+    )
+
+    # STFT reconstruction
+    recon_base_stft, recon_harmonic_stft = STFT(t, signal)
+    recon_STFT = recon_base_stft + recon_harmonic_stft
+
+    # Normalized reconstruction error
+    error = np.sum(np.abs(recon_STFT - signal) ** 2) / np.sum(signal ** 2)
+    error_STFT.append(error)
+
+# Plot STFT
+plt.plot(noise_levels, error_STFT, marker='o')
+plt.xlabel("Noise Level")
+plt.ylabel("Normalized Reconstruction Error")
+plt.title("STFT Reconstruction Error vs Noise")
+plt.grid(True)
+plt.show()
+
+
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic
+    )
+
+    # HHT reconstruction
+    imfs, residue = Hilbert_Huang_processing .emd(signal)
+
+    Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
+    Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
+    recon_H = Recon_base_H + Recon_harmonic_H
+
+    # Normalized reconstruction error
+    error = np.sum(np.abs(recon_H - signal) ** 2) / np.sum(signal ** 2)
+    error_HHT.append(error)
+
+    # Plot HHT
+plt.plot(noise_levels, error_HHT, marker='o')
+plt.xlabel("Noise Level")
+plt.ylabel("Normalized Reconstruction Error")
+plt.title("HHT Reconstruction Error vs Noise")
+plt.grid(True)
+plt.show()
+
+
