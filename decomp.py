@@ -37,7 +37,7 @@ def sift(signal):
     return upper_env, lower_env, mean_env
 
 
-def align_to_envelope_with_time(envelope, time_array, timestamps, distance=1):
+def align_to_envelope_with_time(envelope, time_array, timestamps, distance=10):
 
     envelope = np.asarray(envelope)
     time_array = np.asarray(time_array)

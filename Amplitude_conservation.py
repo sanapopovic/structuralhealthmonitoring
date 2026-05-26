@@ -78,8 +78,8 @@ plt.xlabel("Time in microsec")
 
 
 # max amp values inital wave (no noise, 200mm) 
-A_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
-A_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
+#_max_S2 = 0.5387 # at 58.3349 microsec (1.33 MHz)
+#_max_S4 = 1.7425 # at 75.3994 microsec ( 2.66 MHz)
 
 
 # --- Reconstruction of the signals for each transform ---
@@ -194,53 +194,61 @@ def Wavelet(t, signal):
 
 # --- time of arrival ---
 
-def ToA(recon_base, recon_harmonic, time_stamp_base, time_stamp_harmonic, noise_level):
-    """Applies time of arrival, 
-    Inputs| band reconstruction of base frequency and 2nd harmonic 
-    outputs| 'mode': {peak_index, peak_time, peak_value, time_offset}
-    """
-    env = scipy.signal.envelope(recon_base)
-    env = env[0]
+def ToA(recon_base, recon_harmonic, time_stamp_base, time_stamp_harmonic, noise_level, method):
 
-    if noise_level == 0.0:
-        k = 0
-        j = 0
-    elif noise_level == 0.25:
-        k = 1
-        j = 1
-    elif noise_level == 0.5:
-        k = 2
-        j = 2
-    elif noise_level == 0.75:
-        k = 3
-        j = 3
-    elif noise_level == 1:
-        k = 4
-        j = 4
-    elif noise_level == 1.25:
-        k = 5
-        j = 5
-    elif noise_level == 1.5:
-        k = 6
-        j = 6
+    smoothing_factors = {
+        "hht": {
+            0.0:  (0, 0),
+            0.25: (0, 0),
+            0.5:  (2, 2),
+            0.75: (3, 3),
+            1.0:  (4, 4),
+            1.25: (5, 5),
+            1.5:  (6, 6),
+        },
+        "stft": {
+            0.0:  (0, 0),
+            0.25: (1, 1),
+            0.5:  (2, 2),
+            0.75: (3, 3),
+            1.0:  (4, 4),
+            1.25: (5, 5),
+            1.5:  (6, 6),
+        },
+        "wt": {
+            0.0:  (0, 0),
+            0.25: (0, 0),
+            0.5:  (1, 1),
+            0.75: (2, 2),
+            1.0:  (3, 3),
+            1.25: (4, 4),
+            1.5:  (5, 5),
+        },
+    }
 
+    if method not in smoothing_factors:
+        raise ValueError(f"Unknown method '{method}'. Choose from: {list(smoothing_factors.keys())}")
+    if noise_level not in smoothing_factors[method]:
+        raise ValueError(f"Unknown noise level '{noise_level}'.")
+
+    k, j = smoothing_factors[method][noise_level]
+
+    env = scipy.signal.envelope(recon_base)[0]
     for i in range(k):
-        env, lower_env, mean_env =d.sift(env)
+        env, lower_env, mean_env = d.sift(env)
 
     plt.plot(t, recon_base)
-    plt.plot(t,env)
+    plt.plot(t, env)
     plt.show()
 
     result_base_H = d.align_to_envelope_with_time(env, t, time_stamp_base)
 
-    env = scipy.signal.envelope(recon_harmonic)
-    env = env[0]
-
+    env = scipy.signal.envelope(recon_harmonic)[0]
     for i in range(j):
-        env, lower_env, mean_env =d.sift(env)
-    
+        env, lower_env, mean_env = d.sift(env)
+
     plt.plot(t, recon_harmonic)
-    plt.plot(t,env)
+    plt.plot(t, env)
     plt.show()
 
     result_harmonic_H = d.align_to_envelope_with_time(env, t, time_stamp_harmonic)
@@ -371,8 +379,8 @@ def Main(Length,beta = 6):
         t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise, A1_mode, A2_mode, modes_base, modes_harmonic)
 
         #Find max initial amplitudes
-        A_max_S2 = A_max_S2_init(data_base, data_harmonic,noise)
-        A_max_S4 = A_max_S4_init(data_base, data_harmonic,noise)
+        A_max_S2 = A_max_S2_init(data_base, data_harmonic,0)
+        A_max_S4 = A_max_S4_init(data_base, data_harmonic,0)
 
         #Implement transforms
         recon_base_stft, recon_harmonic_stft = STFT(t, signal)
@@ -380,9 +388,9 @@ def Main(Length,beta = 6):
         recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
 
         #Mode decomposition (time of arrival)
-        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft, time_stamp_base, time_stamp_harmonic, noise)
-        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht, time_stamp_base, time_stamp_harmonic, noise)
-        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt, time_stamp_base, time_stamp_harmonic, noise)
+        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft, time_stamp_base, time_stamp_harmonic, noise, "stft")
+        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht, time_stamp_base, time_stamp_harmonic, noise, "hht")
+        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt, time_stamp_base, time_stamp_harmonic, noise, "wt")
 
         #Amplitudes of decomposed S2 and S4
         A_S2_stft, A_S4_stft = amps(result_base_stft, result_harmonic_stft)
