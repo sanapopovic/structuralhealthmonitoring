@@ -266,7 +266,7 @@ for noise in noise_levels:
     recon_STFT = recon_base_stft + recon_harmonic_stft
 
     # Normalized reconstruction error
-    error = np.sum(np.abs(recon_STFT - signal2) ** 2) / np.sum(signal2   ** 2)
+    error = np.sum(np.abs((recon_STFT)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
     error_STFT.append(error)
 
 # Plot STFT
