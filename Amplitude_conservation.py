@@ -8,6 +8,7 @@ import preprocess
 import time
 import re
 import decomp as d
+import scipy
 from transforms import Hilbert_Huang_processing 
 from transforms import wavelet_processing
 from transforms import SST_v2_processing
@@ -193,16 +194,56 @@ def Wavelet(t, signal):
 
 # --- time of arrival ---
 
-def ToA(recon_base, recon_harmonic, time_stamp_base, time_stamp_harmonic):
+def ToA(recon_base, recon_harmonic, time_stamp_base, time_stamp_harmonic, noise_level):
     """Applies time of arrival, 
     Inputs| band reconstruction of base frequency and 2nd harmonic 
     outputs| 'mode': {peak_index, peak_time, peak_value, time_offset}
     """
-    upper_env, lower_env, mean_env = d.sift(recon_base)
-    result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
+    env = scipy.signal.envelope(recon_base)
+    env = env[0]
 
-    upper_env, lower_env, mean_env = d.sift(recon_harmonic)
-    result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
+    if noise_level == 0.0:
+        k = 0
+        j = 0
+    elif noise_level == 0.25:
+        k = 1
+        j = 1
+    elif noise_level == 0.5:
+        k = 2
+        j = 2
+    elif noise_level == 0.75:
+        k = 3
+        j = 3
+    elif noise_level == 1:
+        k = 4
+        j = 4
+    elif noise_level == 1.25:
+        k = 5
+        j = 5
+    elif noise_level == 1.5:
+        k = 6
+        j = 6
+
+    for i in range(k):
+        env, lower_env, mean_env =d.sift(env)
+
+    plt.plot(t, recon_base)
+    plt.plot(t,env)
+    plt.show()
+
+    result_base_H = d.align_to_envelope_with_time(env, t, time_stamp_base)
+
+    env = scipy.signal.envelope(recon_harmonic)
+    env = env[0]
+
+    for i in range(j):
+        env, lower_env, mean_env =d.sift(env)
+    
+    plt.plot(t, recon_harmonic)
+    plt.plot(t,env)
+    plt.show()
+
+    result_harmonic_H = d.align_to_envelope_with_time(env, t, time_stamp_harmonic)
 
     return result_base_H, result_harmonic_H
 
@@ -285,7 +326,7 @@ def A_max_S4_init(data_base, data_harmonic, noise_level):
 
 
 # --- Main function -----------------------------------------------
-noise_lvl_list = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+noise_lvl_list = [0.0]
 def Main(Length,beta = 6):
 
     if Length == 200:
@@ -339,9 +380,9 @@ def Main(Length,beta = 6):
         recon_base_wt, recon_harmonic_wt = Wavelet(t, signal)
 
         #Mode decomposition (time of arrival)
-        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft, time_stamp_base, time_stamp_harmonic)
-        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht, time_stamp_base, time_stamp_harmonic)
-        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt, time_stamp_base, time_stamp_harmonic)
+        result_base_stft, result_harmonic_stft = ToA(recon_base_stft, recon_harmonic_stft, time_stamp_base, time_stamp_harmonic, noise)
+        result_base_hht, result_harmonic_hht = ToA(recon_base_hht, recon_harmonic_hht, time_stamp_base, time_stamp_harmonic, noise)
+        result_base_wt, result_harmonic_wt = ToA(recon_base_wt, recon_harmonic_wt, time_stamp_base, time_stamp_harmonic, noise)
 
         #Amplitudes of decomposed S2 and S4
         A_S2_stft, A_S4_stft = amps(result_base_stft, result_harmonic_stft)
