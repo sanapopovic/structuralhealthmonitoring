@@ -183,9 +183,9 @@ recon_H = Recon_base_H + Recon_harmonic_H
 
 recon_STFT = recon_base_stft + recon_harmonic_stft
 
-en = ((np.abs(recon_H-signal2))**2)/(np.sum(signal2**2))
+en = ((np.abs(recon_H**2 - signal2**2)))/(np.sum(signal2**2))
 
-en_STFT = ((np.abs(recon_STFT-signal2))**2)/(np.sum(signal2**2))
+en_STFT = ((np.abs(recon_STFT**2-signal2**2)))/(np.sum(signal2**2))
 
 fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
@@ -302,7 +302,7 @@ for noise in noise_levels:
     recon_H = Recon_base_H + Recon_harmonic_H
 
     # Normalized reconstruction error
-    error = np.sum(np.abs(recon_H - signal2) ** 2) / np.sum(signal2 ** 2)
+    error = np.sum(np.abs(recon_H**2 - signal2**2)) / np.sum(signal2**2)
     error_HHT.append(error)
 
     # Plot HHT
