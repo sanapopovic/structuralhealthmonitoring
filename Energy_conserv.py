@@ -266,14 +266,16 @@ for noise in noise_levels:
     recon_STFT = recon_base_stft + recon_harmonic_stft
 
     # Normalized reconstruction error
-    error = np.sum(np.abs(recon_STFT - signal) ** 2) / np.sum(signal ** 2)
+    error = np.sum(np.abs(recon_STFT - signal2) ** 2) / np.sum(signal2   ** 2)
     error_STFT.append(error)
 
 # Plot STFT
 plt.plot(noise_levels, error_STFT, marker='o')
-plt.xlabel("Noise Level")
-plt.ylabel("Normalized Reconstruction Error")
-plt.title("STFT Reconstruction Error vs Noise")
+plt.xlabel("Noise Level", fontsize=18)
+plt.ylabel("Normalized Reconstruction Error", fontsize=18)
+plt.title("STFT Reconstruction Error vs Noise", fontsize=20)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
 plt.grid(True)
 plt.show()
 
@@ -300,14 +302,16 @@ for noise in noise_levels:
     recon_H = Recon_base_H + Recon_harmonic_H
 
     # Normalized reconstruction error
-    error = np.sum(np.abs(recon_H - signal) ** 2) / np.sum(signal ** 2)
+    error = np.sum(np.abs(recon_H - signal2) ** 2) / np.sum(signal2 ** 2)
     error_HHT.append(error)
 
     # Plot HHT
 plt.plot(noise_levels, error_HHT, marker='o')
-plt.xlabel("Noise Level")
-plt.ylabel("Normalized Reconstruction Error")
-plt.title("HHT Reconstruction Error vs Noise")
+plt.xlabel("Noise Level", fontsize=18)
+plt.ylabel("Normalized Reconstruction Error", fontsize=18)
+plt.title("HHT Reconstruction Error vs Noise", fontsize=20)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
 plt.grid(True)
 plt.show()
 
