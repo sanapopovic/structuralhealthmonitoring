@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.interpolate import CubicSpline
 from collections import defaultdict
+from scipy.signal import butter, filtfilt
+from scipy.signal import hilbert
+
+
+
 
 def envelope(signal, peaks):
     x = np.arange(len(signal))
@@ -13,8 +18,6 @@ def envelope(signal, peaks):
         return np.zeros_like(signal)
     spline = CubicSpline(peaks, signal[peaks])
     return spline(x)
-
-
 
 
 def sift(signal):
@@ -35,6 +38,7 @@ def sift(signal):
 
 
 def align_to_envelope_with_time(envelope, time_array, timestamps, distance=10):
+
     envelope = np.asarray(envelope)
     time_array = np.asarray(time_array)
 
@@ -67,6 +71,173 @@ def align_to_envelope_with_time(envelope, time_array, timestamps, distance=10):
         }
 
     return result
+
+
+    x,
+    fs=1.0,
+    debug=False,
+
+
+def sliding_rms_envelope(x, window_size):
+    """
+    Sliding RMS envelope of signal x.
+
+    Parameters:
+    - x: input signal
+    - window_size: number of samples in window (e.g., 1–3 periods)
+
+    Returns:
+    - envelope: RMS envelope
+    """
+
+    x = np.asarray(x)
+    kernel = np.ones(window_size) / window_size
+
+    # mean of squared signal
+    x2 = x**2
+    mean_x2 = np.convolve(x2, kernel, mode='same')
+
+    return np.sqrt(mean_x2)
+
+def lowpass_filter(x, fs, cutoff):
+    """
+    Simple Butterworth low-pass filter.
+    """
+    b, a = butter(4, cutoff / (fs / 2), btype='low')
+    return filtfilt(b, a, x)
+
+
+def lock_in_envelope(x, fs, f0, lp_cutoff=None):
+    """
+    Lock-in / demodulation amplitude envelope.
+
+    Parameters:
+    - x: input signal
+    - fs: sampling frequency
+    - f0: carrier frequency
+    - lp_cutoff: low-pass cutoff (default: f0/10)
+
+    Returns:
+    - envelope
+    """
+
+    x = np.asarray(x)
+    t = np.arange(len(x)) / fs
+
+    # mix down
+    I = x * np.cos(2 * np.pi * f0 * t)
+    Q = x * np.sin(2 * np.pi * f0 * t)
+
+    # low-pass filter to remove 2*f0 term
+    if lp_cutoff is None:
+        lp_cutoff = f0 / 10
+
+    I_lp = lowpass_filter(I, fs, lp_cutoff)
+    Q_lp = lowpass_filter(Q, fs, lp_cutoff)
+
+    # amplitude envelope
+    return np.sqrt(I_lp**2 + Q_lp**2)
+
+class KalmanEnvelope:
+    def __init__(self, fs, f0, q=1e-4, r=1e-1):
+        self.fs = fs
+        self.w = 2 * np.pi * f0 / fs
+
+        # state: [I, Q]
+        self.x = np.zeros((2, 1))
+        self.P = np.eye(2)
+
+        self.Q = q * np.eye(2)
+        self.R = np.array([[r]])
+
+    def step(self, z, n):
+        # time-varying measurement matrix
+        c = np.cos(self.w * n)
+        s = np.sin(self.w * n)
+
+        H = np.array([[c, -s]])
+
+        # predict
+        x_pred = self.x
+        P_pred = self.P + self.Q
+
+        # innovation
+        y = z - (H @ x_pred)[0]
+        S = H @ P_pred @ H.T + self.R
+
+        K = P_pred @ H.T @ np.linalg.inv(S)
+
+        # update
+        self.x = x_pred + K * y
+        self.P = (np.eye(2) - K @ H) @ P_pred
+
+        I, Q = self.x.flatten()
+        A = np.sqrt(I**2 + Q**2)
+
+        return A, I, Q
+
+
+def kalman_envelope(x, fs, f0, q=1e-2, r=1):
+    kf = KalmanEnvelope(fs, f0, q, r)
+
+    env = np.zeros(len(x))
+
+    for n, xn in enumerate(x):
+        env[n], _, _ = kf.step(xn, n)
+
+    return env
+
+def amplitude_envelope(signal: np.ndarray) -> np.ndarray:
+    """
+    Compute the amplitude envelope of a real-valued signal using the analytic signal method (Hilbert transform).
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        Input real-valued (possibly noisy) signal.
+
+    Returns
+    -------
+    np.ndarray
+        Amplitude envelope of the signal.
+    """
+    # Compute analytic signal
+    analytic_signal = hilbert(signal)
+
+    # Amplitude envelope is the magnitude of the analytic signal
+    envelope = np.abs(analytic_signal)
+
+    return envelope
+
+def smooth_envelope(signal, fs, cutoff, order=4):
+    """
+    Envelope smoothing using Hilbert + Butterworth low-pass filter.
+
+    cutoff is in Hz (NOT normalized)
+    """
+
+    # 1. analytic signal
+    analytic = hilbert(signal)
+    envelope = np.abs(analytic)
+
+    # 2. normalize cutoff
+    nyquist = fs / 2
+    wn = cutoff / nyquist  # MUST be between 0 and 1
+
+    # safety check
+    if not 0 < wn < 1:
+        raise ValueError(
+            f"Invalid cutoff: {cutoff} Hz (normalized Wn={wn}). "
+            f"Must satisfy 0 < cutoff < {nyquist} Hz"
+        )
+
+    # 3. filter
+    b, a = butter(order, wn, btype='low')
+    return filtfilt(b, a, envelope)
+
+
+
+#Me fucking around below here
 
 def cluster_time_stamps(data_points, threshold=0.1):
     """
