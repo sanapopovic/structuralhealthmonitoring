@@ -51,8 +51,8 @@ modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)",
 
 noise_level = 1.5
  #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
-beta = 6 #Non_Linearity Parameter: Realistic Range 6-12
-
+beta =10 #Non_Linearity Parameter: Realistic Range 6-12
+distance = 0.2
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
 A1_mode = "S2 Propagated signal (nm)" # Mode of base harmonic
@@ -95,9 +95,9 @@ band_max_harmonic = 2900000
 data_harmonic = preprocess.get_data(dataset_harmonic)
 data_base = preprocess.get_data(dataset_base)
 
-t, signal, data_used1 = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+t, signal, data_used1 = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic, distance )
 
-t2, signal2, data_used2 = preprocess.create_signal(data_base, data_harmonic, beta, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+t2, signal2, data_used2 = preprocess.create_signal(data_base, data_harmonic, beta, 0, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic, distance )
 
 
 dt = np.mean(np.diff(t))
@@ -290,7 +290,9 @@ error_HHT = []
 error_STFT = []
 error_wavelet = []
 
-noise_levels = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+step = 0.1
+noise_levels = np.arange(0, 1.50 + step, step)
+
 
 for noise in noise_levels:
 
@@ -303,7 +305,8 @@ for noise in noise_levels:
         "S2 Propagated signal (nm)",
         "S4 Propagated signal (nm)",
         modes_base,
-        modes_harmonic
+        modes_harmonic,
+        distance
     )
 
     # STFT reconstruction
@@ -336,7 +339,8 @@ for noise in noise_levels:
         "S2 Propagated signal (nm)",
         "S4 Propagated signal (nm)",
         modes_base,
-        modes_harmonic
+        modes_harmonic,
+        distance
     )
 
     # HHT reconstruction
@@ -372,7 +376,8 @@ for noise in noise_levels:
         "S2 Propagated signal (nm)",
         "S4 Propagated signal (nm)",
         modes_base,
-        modes_harmonic
+        modes_harmonic,
+        distance
     )
 
     # Wavelet reconstruction
@@ -384,7 +389,7 @@ for noise in noise_levels:
     # Normalized reconstruction error
     error = np.sum(np.abs((recon_wavelet)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
     error_WT.append(error)
-    
+
     # Plot wavelet
 plt.plot(noise_levels, error_WT, marker='o')
 plt.xlabel("Noise Level", fontsize=18)
