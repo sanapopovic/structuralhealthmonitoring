@@ -38,7 +38,7 @@ time_stamp_harmonic_350mm = {"A1": 116.124,  "S4": 125.401,  "S2": 132.788,  "A4
 
 
 noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
-beta = 10
+beta = 6
 distance = 0.2
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
@@ -282,13 +282,13 @@ def A_diff(A_max_S2_init, A_max_S4_init, A_max_S2_after, A_max_S4_after):
 
 # --- Beta parameter difference --- 
 
-def Beta_diff(Amp_S2, Amp_S4, beta_predefined=6):
+def Beta_diff(Amp_S2, Amp_S4, beta_predefined=10):
     """Calculates beta after transforms and compairs it to the pre defined beta (predefined to create initial wave)
     Inputs| Amplitude of S2 and S4 after reconstruction
     Outputs| Absolute value of the difference of the calculated beta compared to the predefined beta (=6), 
     """
-
-    beta = Amp_S4 / (Amp_S2 ** 2)
+    k = (2*np.pi*1.33*10e6)/(8.303885011*10e3)
+    beta = (Amp_S4 / (Amp_S2 ** 2))*(8/(distance*(k**2)))
 
     beta_diff = abs(beta_predefined - beta)
 
