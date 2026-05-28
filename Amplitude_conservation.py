@@ -38,7 +38,8 @@ time_stamp_harmonic_350mm = {"A1": 116.124,  "S4": 125.401,  "S2": 132.788,  "A4
 
 
 noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
-beta = 6
+beta = 10
+distance = 0.2
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
 A1_mode = "S2 Propagated signal (nm)" # Mode of base harmonic
@@ -58,7 +59,8 @@ dataset_harmonic_350mm = "Data/In-plane_A2_TemporalResponse@15.963MHzmm@350mm.xl
 data_harmonic = preprocess.get_data(dataset_harmonic_200mm)
 data_base = preprocess.get_data(dataset_base_200mm)
 
-t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
+
+t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic, distance)
 
 
 '''
@@ -300,7 +302,7 @@ def A_max_S2_init(data_base, data_harmonic, noise_level):
     #Create signal with only S2 + noise is present
     modes_base = ["S2 Propagated signal (nm)"]
     modes_harmonic = []
-    t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
+    t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic, distance)
 
     #Determine amplitude of S2
     max_idx = np.argmax(signal) # Finds the array index of the highest value
@@ -317,7 +319,7 @@ def A_max_S4_init(data_base, data_harmonic, noise_level):
     #Create signal with only S4 + noise is present
     modes_base = []
     modes_harmonic = ["S4 Propagated signal (nm)"]
-    t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic)
+    t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, A1_mode, A2_mode, modes_base, modes_harmonic, distance)
 
     #Determine amplitude of S2
     max_idx = np.argmax(signal) # Finds the array index of the highest value
@@ -376,7 +378,7 @@ def Main(Length,beta = 6):
     beta_diff_wt_list = []
     for noise in noise_lvl_list:
         #Create signal
-        t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise, A1_mode, A2_mode, modes_base, modes_harmonic)
+        t, signal, second_scale = preprocess.create_signal(data_base, data_harmonic, beta, noise, A1_mode, A2_mode, modes_base, modes_harmonic, distance)
 
         #Find max initial amplitudes
         A_max_S2 = A_max_S2_init(data_base, data_harmonic,0)

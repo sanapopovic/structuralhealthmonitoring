@@ -34,8 +34,8 @@ modes_harmonic = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 
 time_stamp_base ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
 time_stamp_harmonic = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
 
-noise_level = 1.5 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
-beta = 6
+noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
+beta = 10
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
 A1_mode = "S2 Propagated signal (nm)" # Mode of base harmonic
