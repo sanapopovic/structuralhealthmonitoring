@@ -292,37 +292,37 @@ error_wavelet = []
 
 noise_levels = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
 
-# for noise in noise_levels:
+for noise in noise_levels:
 
-#     # Recreate noisy signal for this noise level
-#     t, signal, _ = preprocess.create_signal(
-#         data_base,
-#         data_harmonic,
-#         beta,
-#         noise,
-#         "S2 Propagated signal (nm)",
-#         "S4 Propagated signal (nm)",
-#         modes_base,
-#         modes_harmonic
-#     )
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic
+    )
 
-#     # STFT reconstruction
-#     recon_base_stft, recon_harmonic_stft = STFT(t, signal)
-#     recon_STFT = recon_base_stft + recon_harmonic_stft
+    # STFT reconstruction
+    recon_base_stft, recon_harmonic_stft = STFT(t, signal)
+    recon_STFT = recon_base_stft + recon_harmonic_stft
 
-#     # Normalized reconstruction error
-#     error = np.sum(np.abs((recon_STFT)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
-#     error_STFT.append(error)
+    # Normalized reconstruction error
+    error = np.sum(np.abs((recon_STFT)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
+    error_STFT.append(error)
 
-# # Plot STFT
-# plt.plot(noise_levels, error_STFT, marker='o')
-# plt.xlabel("Noise Level", fontsize=18)
-# plt.ylabel("Normalized Reconstruction Error", fontsize=18)
-# plt.title("STFT Reconstruction Error vs Noise", fontsize=20)
-# plt.xticks(fontsize=18)
-# plt.yticks(fontsize=18)
-# plt.grid(True)
-# plt.show()
+# Plot STFT
+plt.plot(noise_levels, error_STFT, marker='o')
+plt.xlabel("Noise Level", fontsize=18)
+plt.ylabel("Normalized Reconstruction Error", fontsize=18)
+plt.title("STFT Reconstruction Error vs Noise", fontsize=20)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.grid(True)
+plt.show()
 
 
 # for noise in noise_levels:
