@@ -72,7 +72,7 @@ def resample_to_time(signal, old_time, new_time):
 def create_signal(base_harmonic, second_harmonic,
                   beta, noise_level,
                   base_mode, second_mode,
-                  modes_base, modes_harmonic):
+                  modes_base, modes_harmonic, distance):
 
     # ------------------------------------------------------------
     # 1. Extract time vectors
@@ -97,10 +97,12 @@ def create_signal(base_harmonic, second_harmonic,
     # ------------------------------------------------------------
     # 3. Amplitude scaling (β is PURE amplitude control)
     # ------------------------------------------------------------
-    A1 = np.max(base_harmonic[base_mode].to_numpy())
-    A2 = np.max(second_harmonic[second_mode].to_numpy())
+    A1 = (np.max(base_harmonic[base_mode].to_numpy()))*10e-9
+    A2 = (np.max(second_harmonic[second_mode].to_numpy()))*10e-9
 
-    second_scale = beta * (A1 ** 2) / (A2 + 1e-12)  # avoid divide-by-zero
+    k = (2*np.pi*1.33*10e6)/(8.303885011*10e3) #frequency and phase velocity
+    A2_prime = (beta*(k**2)*(A1**2)*distance)/8
+    second_scale = A2_prime/A2  # avoid divide-by-zero
 
     # ------------------------------------------------------------
     # 4. Initialize signal

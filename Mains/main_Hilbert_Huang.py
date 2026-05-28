@@ -63,7 +63,7 @@ plot_name = 'test'
 data_harmonic = preprocess.get_data(dataset_harmonic)
 data_base = preprocess.get_data(dataset_base)
 
-t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic )
+t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic, 0.2 )
 
 
 dt = np.mean(np.diff(t))
