@@ -97,10 +97,10 @@ def create_signal(base_harmonic, second_harmonic,
     # ------------------------------------------------------------
     # 3. Amplitude scaling (β is PURE amplitude control)
     # ------------------------------------------------------------
-    A1 = (np.max(base_harmonic[base_mode].to_numpy()))*10e-9
-    A2 = (np.max(second_harmonic[second_mode].to_numpy()))*10e-9
+    A1 = (np.max(base_harmonic[base_mode].to_numpy()))*1e-9
+    A2 = (np.max(second_harmonic[second_mode].to_numpy()))*1e-9
 
-    k = (2*np.pi*1.33*10e6)/(8.303885011*10e3) #frequency and phase velocity
+    k = (2*np.pi*1.33*1e6)/(8.303885011*1e3) #frequency and phase velocity
     A2_prime = (beta*(k**2)*(A1**2)*distance)/8
     second_scale = A2_prime/A2  # avoid divide-by-zero
 
