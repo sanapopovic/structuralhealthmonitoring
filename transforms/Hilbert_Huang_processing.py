@@ -40,7 +40,7 @@ def sift(signal):
 
 
 
-def extract_imf(signal, max_iter=100, tol=1e-5):
+def extract_imf(signal, max_iter=1500, tol=1e-18):
     """Extract one IMF using iterative sifting."""
     h = signal.copy()
 
