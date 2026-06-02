@@ -49,7 +49,7 @@ modes_base = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)",
                   ]
 
 
-noise_level = 1.5
+noise_level = 0
  #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
 beta =10 #Non_Linearity Parameter: Realistic Range 6-12
 distance = 0.2
@@ -214,32 +214,30 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 
 # HHT Reconstruction
 # First subplot
-# axes[0].plot(t, en)
-# axes[0].set_title("Energy Error", fontsize=20)
-# axes[0].set_xlabel("time [ms]", fontsize=19)
-# axes[0].set_ylabel("Error [-]", fontsize=18)
-# axes[0].set_xlim(0, 140)
-# # axes[0].set_ylim(0, 0.0002)
-# axes[0].tick_params(axis='both', which='major', labelsize=18)
+axes[0].plot(t, en)
+axes[0].set_title("Energy Error", fontsize=20)
+axes[0].set_xlabel("time [ms]", fontsize=19)
+axes[0].set_ylabel("Error [-]", fontsize=18)
+axes[0].set_xlim(0, 140)
+axes[0].tick_params(axis='both', which='major', labelsize=18)
 
-# # Second subplot
-# axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
-# axes[1].plot(t, Recon_harmonic_H, "-")
-# axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
-# axes[1].set_xlabel("time [ms]", fontsize=19)
-# axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
-# axes[1].set_xlim(0, 140)
-# axes[1].set_ylim(-3, 3)
-# axes[1].tick_params(axis='both', which='major', labelsize=18)
-# # Adjust layout
-# plt.tight_layout()
+# Second subplot
+axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
+axes[1].plot(t, Recon_harmonic_H, "-")
+axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
+axes[1].set_xlabel("time [ms]", fontsize=19)
+axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
+axes[1].set_xlim(0, 140)
+axes[1].tick_params(axis='both', which='major', labelsize=18)
+# Adjust layout
+plt.tight_layout()
 
-# # Show figure
-# plt.show()
+# Show figure
+plt.show()
 
 
-#STFT Reconstruction
-# First subplot
+# #STFT Reconstruction
+# #First subplot
 # axes[0].plot(t, en_STFT)
 # axes[0].set_title("Energy Error", fontsize=20)
 # axes[0].set_xlabel("time [ms]", fontsize=19)
@@ -254,7 +252,6 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 # axes[1].set_xlabel("time [ms]", fontsize=19)
 # axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
 # axes[1].set_xlim(0, 140)
-# axes[1].set_ylim(-3, 3)
 # axes[1].tick_params(axis='both', which='major', labelsize=18)
 # # Adjust layout
 # plt.tight_layout()
@@ -262,147 +259,148 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 4))
 # # Show figure
 # plt.show()
 
-# wavelet Reconstruction
-# First subplot
-axes[0].plot(t, en_wavelet)
-axes[0].set_title("Energy Error", fontsize=20)
-axes[0].set_xlabel("time [ms]", fontsize=19)
-axes[0].set_ylabel("Error [-]", fontsize=18)
-axes[0].set_xlim(0, 140)
-axes[0].tick_params(axis='both', which='major', labelsize=18)
+# # wavelet Reconstruction
+# # First subplot
+# axes[0].plot(t, en_wavelet)
+# axes[0].set_title("Energy Error", fontsize=20)
+# axes[0].set_xlabel("time [ms]", fontsize=19)
+# axes[0].set_ylabel("Error [-]", fontsize=18)
+# axes[0].set_xlim(0, 140)
+# axes[0].tick_params(axis='both', which='major', labelsize=18)
 
-# Second subplot
-axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
-axes[1].plot(t, recon_harmonic_cwt, "-")
-axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
-axes[1].set_xlabel("time [ms]", fontsize=19)
-axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
-axes[1].set_xlim(0, 140)
-axes[1].set_ylim(-3, 3)
-axes[1].tick_params(axis='both', which='major', labelsize=18)
-# Adjust layout
-plt.tight_layout()
+# # Second subplot
+# axes[1].plot(t, signal2, "-", label="Original Signal without Noise")
+# axes[1].plot(t, recon_harmonic_cwt, "-")
+# axes[1].set_title("Original Signal vs Reconstructed Signal", fontsize=20)
+# axes[1].set_xlabel("time [ms]", fontsize=19)
+# axes[1].set_ylabel("Amplitude [nm]", fontsize=18)
+# axes[1].set_xlim(0, 140)
+# axes[1].tick_params(axis='both', which='major', labelsize=18)
+# # Adjust layout
+# plt.tight_layout()
 
-# Show figure
+# # Show figure
+# plt.show()
+
+
+
+
+
+#----- Total error vs noise level -----
+error_WT = []
+error_HHT = []
+error_STFT = []
+error_wavelet = []
+
+step = 0.1
+noise_levels = np.arange(0, 1.50 + step, step)
+
+
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic,
+        distance
+    )
+
+    # STFT reconstruction
+
+    harmonic = Hilbert_Huang_processing.Bandpass(signal, fs, 2.66e6, 0.4e6, order=4)
+    _, recon_harmonic_stft = STFT(t, harmonic)
+
+    # Normalized reconstruction error
+    error = np.sum(np.abs((recon_harmonic_stft)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
+    error_STFT.append(error)
+
+# Plot STFT
+plt.plot(noise_levels, error_STFT, marker='o')
+plt.xlabel("Noise Level", fontsize=18)
+plt.ylabel("Normalized Reconstruction Error", fontsize=18)
+plt.title("STFT Reconstruction Error vs Noise", fontsize=20)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.grid(True)
 plt.show()
 
 
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic,
+        distance
+    )
+
+    # HHT reconstruction
+    harmonic = Hilbert_Huang_processing.Bandpass(signal, fs, 2.66e6, 0.4e6, order=4)
+
+    imfs, residue = Hilbert_Huang_processing .emd(harmonic)
+
+    Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
+    
+
+    # Normalized reconstruction error
+    error = np.sum(np.abs(Recon_harmonic_H**2 - signal2**2)) / np.sum(signal2**2)
+    error_HHT.append(error)
+
+    # Plot HHT
+plt.plot(noise_levels, error_HHT, marker='o')
+plt.xlabel("Noise Level", fontsize=18)
+plt.ylabel("Normalized Reconstruction Error", fontsize=18)
+plt.title("HHT Reconstruction Error vs Noise", fontsize=20)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.grid(True)
+plt.show()
+
+
+for noise in noise_levels:
+
+    # Recreate noisy signal for this noise level
+    t, signal, _ = preprocess.create_signal(
+        data_base,
+        data_harmonic,
+        beta,
+        noise,
+        "S2 Propagated signal (nm)",
+        "S4 Propagated signal (nm)",
+        modes_base,
+        modes_harmonic,
+        distance
+    )
+
+    # Wavelet reconstruction
+    harmonic = Hilbert_Huang_processing.Bandpass(signal, fs, 2.66e6, 0.4e6, order=4)
+    _, recon_harmonic_cwt = Wavelet(t, harmonic)
 
 
 
-# #----- Total error vs noise level -----
-# error_WT = []
-# error_HHT = []
-# error_STFT = []
-# error_wavelet = []
+    # Normalized reconstruction error
+    error = np.sum(np.abs((recon_harmonic_cwt)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
+    error_WT.append(error)
 
-# step = 0.1
-# noise_levels = np.arange(0, 1.50 + step, step)
-
-
-# for noise in noise_levels:
-
-#     # Recreate noisy signal for this noise level
-#     t, signal, _ = preprocess.create_signal(
-#         data_base,
-#         data_harmonic,
-#         beta,
-#         noise,
-#         "S2 Propagated signal (nm)",
-#         "S4 Propagated signal (nm)",
-#         modes_base,
-#         modes_harmonic,
-#         distance
-#     )
-
-#     # STFT reconstruction
-#     recon_base_stft, recon_harmonic_stft = STFT(t, signal)
-#     recon_STFT = recon_base_stft + recon_harmonic_stft
-
-#     # Normalized reconstruction error
-#     error = np.sum(np.abs((recon_STFT)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
-#     error_STFT.append(error)
-
-# # Plot STFT
-# plt.plot(noise_levels, error_STFT, marker='o')
-# plt.xlabel("Noise Level", fontsize=18)
-# plt.ylabel("Normalized Reconstruction Error", fontsize=18)
-# plt.title("STFT Reconstruction Error vs Noise", fontsize=20)
-# plt.xticks(fontsize=18)
-# plt.yticks(fontsize=18)
-# plt.grid(True)
-# plt.show()
-
-
-# for noise in noise_levels:
-
-#     # Recreate noisy signal for this noise level
-#     t, signal, _ = preprocess.create_signal(
-#         data_base,
-#         data_harmonic,
-#         beta,
-#         noise,
-#         "S2 Propagated signal (nm)",
-#         "S4 Propagated signal (nm)",
-#         modes_base,
-#         modes_harmonic,
-#         distance
-#     )
-
-#     # HHT reconstruction
-#     imfs, residue = Hilbert_Huang_processing .emd(signal)
-
-#     Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
-#     Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
-#     recon_H = Recon_base_H + Recon_harmonic_H
-
-#     # Normalized reconstruction error
-#     error = np.sum(np.abs(recon_H**2 - signal2**2)) / np.sum(signal2**2)
-#     error_HHT.append(error)
-
-#     # Plot HHT
-# plt.plot(noise_levels, error_HHT, marker='o')
-# plt.xlabel("Noise Level", fontsize=18)
-# plt.ylabel("Normalized Reconstruction Error", fontsize=18)
-# plt.title("HHT Reconstruction Error vs Noise", fontsize=20)
-# plt.xticks(fontsize=18)
-# plt.yticks(fontsize=18)
-# plt.grid(True)
-# plt.show()
-
-
-# for noise in noise_levels:
-
-#     # Recreate noisy signal for this noise level
-#     t, signal, _ = preprocess.create_signal(
-#         data_base,
-#         data_harmonic,
-#         beta,
-#         noise,
-#         "S2 Propagated signal (nm)",
-#         "S4 Propagated signal (nm)",
-#         modes_base,
-#         modes_harmonic,
-#         distance
-#     )
-
-#     # Wavelet reconstruction
-#     recon_base_cwt, recon_harmonic_cwt = Wavelet(t, signal)
-
-
-#     recon_wavelet = recon_base_cwt + recon_harmonic_cwt
-
-#     # Normalized reconstruction error
-#     error = np.sum(np.abs((recon_wavelet)**2 - (signal2) ** 2)) / np.sum(signal2   ** 2)
-#     error_WT.append(error)
-
-#     # Plot wavelet
-# plt.plot(noise_levels, error_WT, marker='o')
-# plt.xlabel("Noise Level", fontsize=18)
-# plt.ylabel("Normalized Reconstruction Error", fontsize=18)
-# plt.title("Wavelet Reconstruction Error vs Noise", fontsize=20)
-# plt.xticks(fontsize=18)
-# plt.yticks(fontsize=18)
-# plt.grid(True)
-# plt.show()
+    # Plot wavelet
+plt.plot(noise_levels, error_WT, marker='o')
+plt.xlabel("Noise Level", fontsize=18)
+plt.ylabel("Normalized Reconstruction Error", fontsize=18)
+plt.title("Wavelet Reconstruction Error vs Noise", fontsize=20)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.grid(True)
+plt.show()
 
