@@ -99,7 +99,7 @@ def wavelet_scalogram(
     # ------------------------------------------------
     # Create folder
     # ------------------------------------------------
-    folder = "plots"
+    folder = "plots/newsignal/centerfreqfine/beta100"
     os.makedirs(folder, exist_ok=True)
 
     # ------------------------------------------------

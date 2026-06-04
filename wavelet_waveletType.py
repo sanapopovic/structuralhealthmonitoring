@@ -16,13 +16,29 @@ import preprocess
 # If they are in the same script, just ensure they are defined above.
 from transforms import wavelet_processing 
 
+
+def reconstruct_band_sst(Tx, freqs, W, band_min, band_max):
+    """
+    Reconstructs signal using only the Synchrosqueezed bins within the band.
+    """
+    # Create mask for the frequency band
+    mask = (freqs >= band_min) & (freqs <= band_max)
+    Tx_masked = np.zeros_like(Tx)
+    Tx_masked[mask, :] = Tx[mask, :]
+    
+    # Invert SST
+    recon = issq_cwt(Tx_masked, W)
+    return recon
+
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 #  USER PARAMETERS — Wavelet Specific
 # ═══════════════════════════════════════════════════════════════════════════
 
 # --- signal construction  -------------------------
 noise_level = 0
-beta = 6
+beta = 10
 A1_mode = "S2 Propagated signal (nm)"
 A2_mode = "S4 Propagated signal (nm)"
 
@@ -49,7 +65,7 @@ parameter = "wavelet_bandwidth"
 # Range for Bandwidth (B) in cmorB-C
 b_start, b_end, b_step = 0.5, 5.0, 0.5
 # Range for Center Frequency (C) in cmorB-C
-c_start, c_end, c_step = 0.5, 2.0, 0.2
+c_start, c_end, c_step = 6.5, 10.5 , 0.5 
 
 # Defaults when not being swept
 default_B = 1.5
@@ -66,7 +82,7 @@ data_harmonic = preprocess.get_data(dataset_harmonic)
 print("[1] Building composite signal …")
 t, signal, second_scale = preprocess.create_signal(
     data_base, data_harmonic, beta, noise_level,
-    A1_mode, A2_mode, modes_base, modes_harmonic,
+    A1_mode, A2_mode, modes_base, modes_harmonic, distance=200
 )
 
 t_base = data_base["Propagation time (micsec)"].to_numpy()
@@ -148,7 +164,7 @@ plt.grid(True, which='both', linestyle='--', alpha=0.5)
 plt.legend()
 
 os.makedirs("plots", exist_ok=True)
-plt.savefig(f"plots/wavelet_error_{parameter}.png", dpi=300)
+plt.savefig(f"plots/wavelet_error_{parameter}_noise_0.5.png", dpi=300)
 print(f"\nDone — Plot saved to plots/wavelet_error_{parameter}.png")
 
 
@@ -220,6 +236,8 @@ for i, (name, params) in enumerate(wavelet_configs):
 
 plt.figure(figsize=(10, 5))
 bars = plt.bar(wavelet_labels, final_errors, color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'])
+#bars = plt.bar(wavelet_labels, final_errors, color=['blue', 'green','red', 'black'])
+
 
 for bar in bars:
     yval = bar.get_height()
@@ -228,7 +246,7 @@ for bar in bars:
 
 plt.ylabel("Total Summed Absolute Error (nm)")
 plt.title("Mother Wavelet Performance Comparison (via WSST)")
-plt.grid(axis='y', linestyle='--', alpha=0.7)
+#plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
 plt.savefig("plots/wavelet_family_comparison.png", dpi=300)
 
