@@ -57,9 +57,9 @@ def amplitude(x):
 # -----------------------------
 def compute_beta(A_S2, A_S4, beta_ref=10):
 
-    k = (2 * np.pi * 1.33e6) / (8.303885011e3) * 1e-9
+    k = (2*np.pi*1.33*1e6)/(8.303885011*1e3)
 
-    beta = (A_S4 / (A_S2 ** 2)) * (8 / (distance * 1e9 * k**2))
+    beta = ((A_S4*1e-9) / ((A_S2*1e-9) ** 2)) * (8 / (distance  * k**2))
 
     return abs(beta_ref - beta), beta
 
@@ -121,13 +121,18 @@ def HHT(t, signal):
     dt = np.mean(np.diff(t))
     fs = 1.0 / dt * 1e6
 
+    harmonic = Hilbert_Huang_processing.Bandpass(signal, fs, 2.66e6, 0.4e6)
+    base = Hilbert_Huang_processing.Bandpass(signal, fs, 1.33e6, 0.4e6)
+
     # IMPORTANT FIX:
     # no bandpass BEFORE EMD
-    imf, _ = Hilbert_Huang_processing.emd(signal)
+    imf, _ = Hilbert_Huang_processing.emd(base)
 
     recon_base = Hilbert_Huang_processing.bandpass_hilbert(
         imf, fs, 1.1e6, 1.5e6
     )
+
+    imf, _ = Hilbert_Huang_processing.emd(harmonic)
 
     recon_harm = Hilbert_Huang_processing.bandpass_hilbert(
         imf, fs, 2.3e6, 2.9e6
