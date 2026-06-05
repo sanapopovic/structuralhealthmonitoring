@@ -256,13 +256,19 @@ def initial_values(data_base, data_harm):
 def Main():
 
     #Plot noise level against beta error
-    noise_list = [0,0.25,0.5,0.75,1,1.25,1.5]
+    noise_list = [0,0.5,1,1.5]
     beta_error_list_stft = []
     beta_error_list_hht = []
     beta_error_list_wavelet = []
 
     for noise in noise_list:
         noise_level = noise
+        
+        print("")
+        print("")
+        print("-------------------")
+        print(f"Noise Level: {noise_level}")
+        print("-------------------"\n)
 
 
         data_base = preprocess.get_data(dataset_base)
@@ -304,7 +310,6 @@ def Main():
     plt.plot(noise_list,beta_error_list_stft)
     plt.xlabel("Noise Level")
     plt.ylabel("Beta Error")
-
 
     plt.plot(noise_list,beta_error_list_hht)
     plt.xlabel("Noise Level")
