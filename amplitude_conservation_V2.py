@@ -256,17 +256,28 @@ def initial_values(data_base, data_harm):
 def Main():
 
     #Plot noise level against beta error
-    noise_list = [0,0.25,0.5,0.75,1,1.25,1.5]
+    noise_list = [0,0.5,1,1.5]
     beta_error_list_stft = []
     beta_error_list_hht = []
     beta_error_list_wavelet = []
 
+    data_base = preprocess.get_data(dataset_base)
+    data_harm = preprocess.get_data(dataset_harm)
+
+    A_init_S2, A_init_S4 = initial_values(data_base, data_harm)
+
+    print("INITIAL:", A_init_S2, A_init_S4)
+    print("----------------------")
+
     for noise in noise_list:
         noise_level = noise
-
-
-        data_base = preprocess.get_data(dataset_base)
-        data_harm = preprocess.get_data(dataset_harm)
+        
+        print("")
+        print("")
+        print("********************************")
+        print(f"Noise Level: {noise_level}")
+        print("********************************\n")
+        print("")
 
         t, signal, _ = preprocess.create_signal(
             data_base, data_harm,
@@ -275,11 +286,6 @@ def Main():
             modes_base, modes_harmonic,
             distance
         )
-
-        A_init_S2, A_init_S4 = initial_values(data_base, data_harm)
-
-        print("INITIAL:", A_init_S2, A_init_S4)
-        print("----------------------")
 
         for m in ["stft", "hht", "wavelet"]:
 
