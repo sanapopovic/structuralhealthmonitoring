@@ -299,22 +299,15 @@ def Main():
             print("beta error:", beta_err)
             print("----------------------")
 
-    print(noise_list)
-    print(beta_error_list_stft)
-    plt.plot(noise_list,beta_error_list_stft)
+    plt.figure
+    plt.plot(noise_list, beta_error_list_stft, label="STFT")
+    plt.plot(noise_list, beta_error_list_hht, label="HHT")
+    plt.plot(noise_list, beta_error_list_wavelet, label="Wavelet")
+
     plt.xlabel("Noise Level")
     plt.ylabel("Beta Error")
-
-
-    plt.plot(noise_list,beta_error_list_hht)
-    plt.xlabel("Noise Level")
-    plt.ylabel("Beta Error")
-
-
-    plt.plot(noise_list,beta_error_list_wavelet)
-    plt.xlabel("Noise Level")
-    plt.ylabel("Beta Error")
-    plt.show
+    plt.legend()
+    plt.show()
 
 
 Main()
