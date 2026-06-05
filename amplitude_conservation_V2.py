@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
+import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -11,13 +12,13 @@ from scipy.signal import hilbert
 from transforms import Hilbert_Huang_processing
 from transforms import SST_v2_processing
 
-
 # -----------------------------
 # CONFIG
 # -----------------------------
 noise_level = 0.0
 beta_true = 10
 distance = 0.2
+plotting = True
 
 A1_mode = "S2 Propagated signal (nm)"
 A2_mode = "S4 Propagated signal (nm)"
@@ -74,8 +75,7 @@ def ToA(recon_base, recon_harm, t):
     res_b = d.align_to_envelope_with_time(env_b, t, time_stamp_base)
     res_h = d.align_to_envelope_with_time(env_h, t, time_stamp_harm)
 
-    return res_b, res_h
-
+    return res_b, res_h, env_b, env_h
 
 # -----------------------------
 # AMPLITUDE EXTRACTION FROM TOA
@@ -162,11 +162,50 @@ def Wavelet(t, signal):
         )
     )
 
+# -----------------------------
+# SIGNAL PLOTTING
+# -----------------------------
+def plot_signal(t, signal, rb, rh, env_b, env_h, noise_level=0.0, m="default"):
+    if plotting:
+        fig = plt.figure()
+
+        l1, = plt.plot(t, signal, label="Initial Signal")
+        l2, = plt.plot(t, rb, label="Reconstructed Signal (Base)")
+        l3, = plt.plot(t, rh, label="Reconstructed Signal (Harmonic)")
+        l4, = plt.plot(t, env_b, label="Envelope (Base)")
+        l5, = plt.plot(t, env_h, label="Envelope (Harmonic)")
+
+        plt.title(f"Method: {m}, Noise Level: {noise_level}")
+        plt.xlabel("Time")
+        plt.ylabel("Amplitude")
+
+        leg = plt.legend()
+        plt.grid(True)
+
+        lines = [l1, l2, l3, l4, l5]
+
+        for legline in leg.get_lines():
+            legline.set_picker(True)
+
+        def on_pick(event):
+            legline = event.artist
+            idx = leg.get_lines().index(legline)
+
+            line = lines[idx]
+            visible = not line.get_visible()
+
+            line.set_visible(visible)
+            legline.set_alpha(1.0 if visible else 0.2)
+
+            fig.canvas.draw_idle()
+
+        fig.canvas.mpl_connect('pick_event', on_pick)
+
 
 # -----------------------------
 # PIPELINE
 # -----------------------------
-def run(method, t, signal):
+def run(method, t, signal, noise_level):
 
     if method == "stft":
         rb, rh = STFT(t, signal)
@@ -180,7 +219,9 @@ def run(method, t, signal):
     else:
         raise ValueError("unknown method")
 
-    res_b, res_h = ToA(rb, rh, t)
+    res_b, res_h, env_b, env_h = ToA(rb, rh, t)
+
+    plot_signal(t, signal, rb, rh, env_b, env_h, noise_level, method)
 
     A_S2, A_S4 = amps(res_b, res_h)
 
@@ -204,7 +245,7 @@ def initial_values(data_base, data_harm):
 
     rb, rh = STFT(t, sig)
 
-    res_b, res_h = ToA(rb, rh, t)
+    res_b, res_h, _, _ = ToA(rb, rh, t)
 
     return amps(res_b, res_h)
 
@@ -242,7 +283,7 @@ def Main():
 
         for m in ["stft", "hht", "wavelet"]:
 
-            A_S2, A_S4, beta_err, beta_new = run(m, t, signal)
+            A_S2, A_S4, beta_err, beta_new = run(m, t, signal, noise_level)
 
             if m == "stft":
                 beta_error_list_stft.append(beta_err)
@@ -254,7 +295,7 @@ def Main():
             print(m.upper())
             print("S2:", A_S2)
             print("S4:", A_S4)
-            print("beta new:",beta_new)
+            print("beta new",beta_new)
             print("beta error:", beta_err)
             print("----------------------")
 
@@ -277,3 +318,4 @@ def Main():
 
 
 Main()
+plt.show()
