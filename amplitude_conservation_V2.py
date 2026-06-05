@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib as plt
 import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,7 +15,7 @@ from transforms import SST_v2_processing
 # -----------------------------
 # CONFIG
 # -----------------------------
-noise_level = 0.5
+noise_level = 0.0
 beta_true = 10
 distance = 0.2
 
@@ -120,6 +121,8 @@ def HHT(t, signal):
     dt = np.mean(np.diff(t))
     fs = 1.0 / dt * 1e6
 
+    # IMPORTANT FIX:
+    # no bandpass BEFORE EMD
     imf, _ = Hilbert_Huang_processing.emd(signal)
 
     recon_base = Hilbert_Huang_processing.bandpass_hilbert(
@@ -227,16 +230,48 @@ def Main():
     print("INITIAL:", A_init_S2, A_init_S4)
     print("----------------------")
 
-    for m in ["stft", "hht", "wavelet"]:
+    #Plot noise level against beta error
+    noise_list = [0,0.25,0.5,0.75,1,1.25,1.5]
+    beta_error_list_stft = []
+    beta_error_list_hht = []
+    beta_error_list_wavelet = []
 
-        A_S2, A_S4, beta_err, beta_new = run(m, t, signal)
+    for noise in noise_list:
+        noise_level = noise
 
-        print(m.upper())
-        print("S2:", A_S2)
-        print("S4:", A_S4)
-        print("new beta:", beta_new)
-        print("beta error:", beta_err)
-        print("----------------------")
+        for m in ["stft", "hht", "wavelet"]:
+
+            A_S2, A_S4, beta_err, beta_new = run(m, t, signal)
+
+            if m == "stft":
+                beta_error_list_stft.append(beta_err)
+            elif m == "hht":
+                beta_error_list_hht.append(beta_err)
+            else:
+                beta_error_list_wavelet.append(beta_err)
+
+            print(m.upper())
+            print("S2:", A_S2)
+            print("S4:", A_S4)
+            print("beta new:",beta_new)
+            print("beta error:", beta_err)
+            print("----------------------")
+
+
+            plt.plot(noise_list,beta_error_list_stft)
+            plt.xlabel("Noise Level")
+            plt.ylabel("Beta Error")
+            plt.show
+
+            plt.plot(noise_list,beta_error_list_hht)
+            plt.xlabel("Noise Level")
+            plt.ylabel("Beta Error")
+            plt.show
+
+            plt.plot(noise_list,beta_error_list_wavelet)
+            plt.xlabel("Noise Level")
+            plt.ylabel("Beta Error")
+            plt.show
 
 
 Main()
