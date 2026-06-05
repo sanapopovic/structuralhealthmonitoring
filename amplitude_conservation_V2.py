@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import sys, os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -214,22 +214,6 @@ def initial_values(data_base, data_harm):
 # -----------------------------
 def Main():
 
-    data_base = preprocess.get_data(dataset_base)
-    data_harm = preprocess.get_data(dataset_harm)
-
-    t, signal, _ = preprocess.create_signal(
-        data_base, data_harm,
-        beta_true, noise_level,
-        A1_mode, A2_mode,
-        modes_base, modes_harmonic,
-        distance
-    )
-
-    A_init_S2, A_init_S4 = initial_values(data_base, data_harm)
-
-    print("INITIAL:", A_init_S2, A_init_S4)
-    print("----------------------")
-
     #Plot noise level against beta error
     noise_list = [0,0.25,0.5,0.75,1,1.25,1.5]
     beta_error_list_stft = []
@@ -238,6 +222,23 @@ def Main():
 
     for noise in noise_list:
         noise_level = noise
+
+
+        data_base = preprocess.get_data(dataset_base)
+        data_harm = preprocess.get_data(dataset_harm)
+
+        t, signal, _ = preprocess.create_signal(
+            data_base, data_harm,
+            beta_true, noise_level,
+            A1_mode, A2_mode,
+            modes_base, modes_harmonic,
+            distance
+        )
+
+        A_init_S2, A_init_S4 = initial_values(data_base, data_harm)
+
+        print("INITIAL:", A_init_S2, A_init_S4)
+        print("----------------------")
 
         for m in ["stft", "hht", "wavelet"]:
 
@@ -257,21 +258,22 @@ def Main():
             print("beta error:", beta_err)
             print("----------------------")
 
+    print(noise_list)
+    print(beta_error_list_stft)
+    plt.plot(noise_list,beta_error_list_stft)
+    plt.xlabel("Noise Level")
+    plt.ylabel("Beta Error")
 
-            plt.plot(noise_list,beta_error_list_stft)
-            plt.xlabel("Noise Level")
-            plt.ylabel("Beta Error")
-            plt.show
 
-            plt.plot(noise_list,beta_error_list_hht)
-            plt.xlabel("Noise Level")
-            plt.ylabel("Beta Error")
-            plt.show
+    plt.plot(noise_list,beta_error_list_hht)
+    plt.xlabel("Noise Level")
+    plt.ylabel("Beta Error")
 
-            plt.plot(noise_list,beta_error_list_wavelet)
-            plt.xlabel("Noise Level")
-            plt.ylabel("Beta Error")
-            plt.show
+
+    plt.plot(noise_list,beta_error_list_wavelet)
+    plt.xlabel("Noise Level")
+    plt.ylabel("Beta Error")
+    plt.show
 
 
 Main()
