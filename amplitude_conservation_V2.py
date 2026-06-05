@@ -261,18 +261,23 @@ def Main():
     beta_error_list_hht = []
     beta_error_list_wavelet = []
 
+    data_base = preprocess.get_data(dataset_base)
+    data_harm = preprocess.get_data(dataset_harm)
+
+    A_init_S2, A_init_S4 = initial_values(data_base, data_harm)
+
+    print("INITIAL:", A_init_S2, A_init_S4)
+    print("----------------------")
+
     for noise in noise_list:
         noise_level = noise
         
         print("")
         print("")
-        print("-------------------")
+        print("********************************")
         print(f"Noise Level: {noise_level}")
-        print("-------------------"\n)
-
-
-        data_base = preprocess.get_data(dataset_base)
-        data_harm = preprocess.get_data(dataset_harm)
+        print("********************************\n")
+        print("")
 
         t, signal, _ = preprocess.create_signal(
             data_base, data_harm,
@@ -281,11 +286,6 @@ def Main():
             modes_base, modes_harmonic,
             distance
         )
-
-        A_init_S2, A_init_S4 = initial_values(data_base, data_harm)
-
-        print("INITIAL:", A_init_S2, A_init_S4)
-        print("----------------------")
 
         for m in ["stft", "hht", "wavelet"]:
 
