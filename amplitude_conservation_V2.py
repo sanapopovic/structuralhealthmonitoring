@@ -14,7 +14,7 @@ from transforms import SST_v2_processing
 # -----------------------------
 # CONFIG
 # -----------------------------
-noise_level = 0.0
+noise_level = 0.5
 beta_true = 10
 distance = 0.2
 
@@ -59,7 +59,7 @@ def compute_beta(A_S2, A_S4, beta_ref=10):
 
     beta = (A_S4 / (A_S2 ** 2)) * (8 / (distance * 1e9 * k**2))
 
-    return abs(beta_ref - beta)
+    return abs(beta_ref - beta), beta
 
 
 # -----------------------------
@@ -113,15 +113,13 @@ def STFT(t, signal):
 
 
 # =========================================================
-# HHT (FIXED: NO DOUBLE FILTERING)
+# HHT
 # =========================================================
 def HHT(t, signal):
 
     dt = np.mean(np.diff(t))
     fs = 1.0 / dt * 1e6
 
-    # IMPORTANT FIX:
-    # no bandpass BEFORE EMD
     imf, _ = Hilbert_Huang_processing.emd(signal)
 
     recon_base = Hilbert_Huang_processing.bandpass_hilbert(
@@ -136,7 +134,7 @@ def HHT(t, signal):
 
 
 # =========================================================
-# WAVELET (UNCHANGED BUT CONSISTENT OUTPUT USAGE)
+# WAVELET
 # =========================================================
 def Wavelet(t, signal):
 
@@ -183,9 +181,9 @@ def run(method, t, signal):
 
     A_S2, A_S4 = amps(res_b, res_h)
 
-    beta_err = compute_beta(A_S2, A_S4)
+    beta_err, beta_new = compute_beta(A_S2, A_S4)
 
-    return A_S2, A_S4, beta_err
+    return A_S2, A_S4, beta_err, beta_new
 
 
 # -----------------------------
@@ -231,11 +229,12 @@ def Main():
 
     for m in ["stft", "hht", "wavelet"]:
 
-        A_S2, A_S4, beta_err = run(m, t, signal)
+        A_S2, A_S4, beta_err, beta_new = run(m, t, signal)
 
         print(m.upper())
         print("S2:", A_S2)
         print("S4:", A_S4)
+        print("new beta:", beta_new)
         print("beta error:", beta_err)
         print("----------------------")
 
