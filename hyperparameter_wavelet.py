@@ -18,7 +18,7 @@ from transforms import wavelet_processing
 
 # --- signal construction  -------------------------
 noise_level = 0
-beta = 6
+beta = 10
 A1_mode = "S2 Propagated signal (nm)"
 A2_mode = "S4 Propagated signal (nm)"
 
@@ -43,13 +43,13 @@ band_max_harmonic = 2_900_000
 parameter = "wavelet_bandwidth" 
 
 # Range for Bandwidth (B) in cmorB-C
-b_start, b_end, b_step = 0.5, 5.0, 0.5
+b_start, b_end, b_step = 0.5, 13.0, 0.5
 # Range for Center Frequency (C) in cmorB-C
-c_start, c_end, c_step = 0.5, 2.0, 0.2
+c_start, c_end, c_step = 0.5, 5.0, 0.2
 
 # Defaults when not being swept
-default_B = 1.5
-default_C = 1.0
+default_B = 3.5
+default_C = 5.5
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  LOAD & BUILD SIGNAL
@@ -62,7 +62,7 @@ data_harmonic = preprocess.get_data(dataset_harmonic)
 print("[1] Building composite signal …")
 t, signal, second_scale = preprocess.create_signal(
     data_base, data_harmonic, beta, noise_level,
-    A1_mode, A2_mode, modes_base, modes_harmonic,
+    A1_mode, A2_mode, modes_base, modes_harmonic, distance= 200
 )
 
 t_base = data_base["Propagation time (micsec)"].to_numpy()
@@ -134,8 +134,8 @@ for val in test_range:
 
 plt.figure(figsize=(10, 6))
 plt.plot(results['par'], results['h_err'], 'o-', color="blue", label="Harmonic Error")
-plt.plot(results['par'], results['b_err'], 'o-', color="red", label="Base Error")
-plt.plot(results['par'], results['t_err'], 'o--', color="green", label="Total Error", alpha=0.7)
+# plt.plot(results['par'], results['b_err'], 'o-', color="red", label="Base Error")
+# plt.plot(results['par'], results['t_err'], 'o--', color="green", label="Total Error", alpha=0.7)
 
 plt.xlabel(xlabel)
 plt.ylabel("Summed Absolute Error (nm)")

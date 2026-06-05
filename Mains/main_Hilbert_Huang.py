@@ -34,7 +34,7 @@ modes_harmonic = ["S2 Propagated signal (nm)", "A1 Propagated signal (nm)", "A4 
 time_stamp_base ={"S2": 48.7581,  "A1": 71.5683,  "A4": 151.605} #at 1.33 MHz
 time_stamp_harmonic = {"A1": 66.3568,  "S4": 71.6575,  "S2": 75.8788,  "A4": 93.6327} #at 2.66 MHz
 
-noise_level =1.5 #     Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
+noise_level = 0 #Noise Level: 0 == 0%, 1.5 == 150%, should not be larger than 1.5
 beta = 10
 
 # Modes around which the beta parameter is taken, copy-paste from lists above
@@ -66,44 +66,33 @@ data_base = preprocess.get_data(dataset_base)
 t, signal, data_harmonic = preprocess.create_signal(data_base, data_harmonic, beta, noise_level, "S2 Propagated signal (nm)", "S4 Propagated signal (nm)", modes_base, modes_harmonic, 0.2 )
 
 
-
 dt = np.mean(np.diff(t))
 fs = (1.0 / dt)*(10**6)
 
 
-harmonic = Hilbert_Huang_processing.Bandpass(signal, fs, 2.66e6, 0.4e6, order=5)
-base = Hilbert_Huang_processing.Bandpass(signal, fs, 1.33e6, 0.4e6, order= 5)
-
-imfs, residue = Hilbert_Huang_processing .emd(base)
+imfs, residue = Hilbert_Huang_processing .emd(signal)
 inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
 fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name)
-
-Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
-
-imfs, residue = Hilbert_Huang_processing .emd(harmonic)
-inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
-fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name)
-
-
 
 Recon_harmonic_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_harmonic, f_max_harmonic)
+Recon_base_H = Hilbert_Huang_processing.bandpass_hilbert(imfs, fs, f_min_base, f_max_base)
 
 upper_env, lower_env, mean_env = d.sift(Recon_base_H)
 result_base_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_base)
 
 
 upper_env, lower_env, mean_env = d.sift(Recon_harmonic_H)
-#env = d.sliding_rms_envelope(Recon_base_H, int(fs/(1.33*1e6)))
+#env = d.sliding_rms_envelope(Recon_harmonic_H, int(fs/(2.6*10e6)))
+env = s.envelope(Recon_harmonic_H)
+env = env[0]
+env, lower_env, mean_env = d.sift(env)
+env, lower_env, mean_env = d.sift(env)
+env, lower_env, mean_env = d.sift(env)
 #env = s.envelope(Recon_harmonic_H)
-#env = env[0]
-#env, lower_env, mean_env = d.sift(env)
-#env, lower_env, mean_env = d.sift(env)
-#env, lower_env, mean_env = d.sift(env)
-#env = s.envelope(Recon_harmonic_H)
-#env = d.lock_in_envelope(Recon_harmonic_H, fs, 2.66*1e6)
-env = d.kalman_envelope(Recon_base_H, fs, 1.33*1e6)
+#env = d.lock_in_envelope(Recon_harmonic_H, fs, 2.66*10e6)
+#env = d.kalman_envelope(Recon_harmonic_H, fs, 2.66*10e6)
 #env = d.amplitude_envelope(Recon_harmonic_H)
-#env = d.smooth_envelope(Recon_harmonic_H, fs,2.6*1e6)
+#env = d.smooth_envelope(Recon_harmonic_H, fs,2.6*10e6)
 result_harmonic_H = d.align_to_envelope_with_time(mean_env, t, time_stamp_harmonic)
 
 
@@ -127,22 +116,20 @@ plt.show()
 
 fig, ax = plt.subplots(2, 1)
 ax[0].plot(t, Recon_base_H)
-ax[0].set_ylim(-0.7, 0.7)
 ax[0].set_title("Base Reconstruction")
-ax[0].plot(t,env)
 
 
 ax[1].plot(t, Recon_harmonic_H)
-ax[1].set_ylim(-0.0001,0.0001)
+ax[1].plot(t,env)
 ax[1].set_title("Harmonic Reconstruction")
 
 plt.tight_layout()
 plt.show()
 
 
-
-
-
+imfs, residue = Hilbert_Huang_processing .emd(Recon_harmonic_H)
+inst_amp, inst_freq = Hilbert_Huang_processing .hilbert_analysis(imfs, fs)
+fig, ax, H, T, F = Hilbert_Huang_processing.plot_hilbert_spectrum(inst_freq, inst_amp, t, fs, log_amplitude=log_amplitude, f_bins=f_bins ,t_bins=t_bins, name= plot_name)
 
 
 
