@@ -3,15 +3,10 @@ import sys
 import os
 import matplotlib.pyplot as plt
 from ssqueezepy import ssq_cwt, issq_cwt, Wavelet
-
+from transforms import SST_v2_processing          
 import preprocess
 
-# Make sure project root is on path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  USER PARAMETERS — Wavelet Specific
-# ═══════════════════════════════════════════════════════════════════════════
 
 # --- signal construction  -------------------------
 noise_level = 0
@@ -31,14 +26,16 @@ band_max_base = 1_500_000
 band_min_harmonic = 2_300_000
 band_max_harmonic = 2_900_000
 
-# --- Wavelet Hyperparameters to Test ---------------------------------------
 # options: "wavelet_bandwidth" or "wavelet_center_freq"
-parameter = "wavelet_bandwidth" 
+parameter = "wavelet_center_freq" 
 
 # Range for Morse Beta (Proxy for Bandwidth)
 b_start, b_end, b_step = 0.5, 20, 0.5
 # Range for Morlet Mu (Proxy for Center Frequency)
-c_start, c_end, c_step = 2.0, 15.0, 0.5 
+c_start, c_end, c_step = 0.5, 15.0, 0.5 
+
+default_B = 3.5
+default_C = 3.5
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  LOAD & BUILD SIGNAL
@@ -69,17 +66,6 @@ for mode in modes_harmonic:
 fs = 1 / (np.mean(np.diff(t)) * 1e-6)
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  SST RECONSTRUCTION HELPER FUNCTIONS
-# ═══════════════════════════════════════════════════════════════════════════
-
-def reconstruct_band_sst(Tx, freqs, W, band_min, band_max):
-    """Reconstructs signal using only the Synchrosqueezed bins within the band."""
-    mask = (freqs >= band_min) & (freqs <= band_max)
-    Tx_masked = np.zeros_like(Tx)
-    Tx_masked[mask, :] = Tx[mask, :]
-    return issq_cwt(Tx_masked, W)
-
-# ═══════════════════════════════════════════════════════════════════════════
 #  EXECUTE EVALUATION (UPDATED TO USE SST)
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -97,24 +83,25 @@ print(f"[2] Evaluating {parameter} via WSST...")
 for val in test_range:
     # Configure the ssqueezepy Wavelet Object dynamically
     if parameter == "wavelet_bandwidth":
-        W_obj = Wavelet(('gmw', {'beta': val, 'gamma': 3}))
-        wavelet_label = f"Morse(β={val})"
+        wavelet_label = f"cmor{val}-{default_C}"
+        print('success')
     else:
-        W_obj = Wavelet(('morlet', {'mu': val}))
-        wavelet_label = f"Morlet(μ={val})"
+        wavelet_label = f"cmor{default_B}-{val}" 
+        print('success')
     
     try:
-        # Compute SST
-        Tx, Wx, freqs, scales, *_ = ssq_cwt(signal, W_obj, fs=fs)
-        
+
         # Reconstruct Bands via SST
-        recon_b = reconstruct_band_sst(Tx, freqs, W_obj, band_min_base, band_max_base)
-        recon_h = reconstruct_band_sst(Tx, freqs, W_obj, band_min_harmonic, band_max_harmonic)
-        
-        # Calculate Error handling potential length mismatches safely
+        recon_b = SST_v2_processing.reconstruct_band_cwt(t, signal, band_min_base, band_max_base, wavelet_label)
+        recon_h = SST_v2_processing.reconstruct_band_cwt(t, signal, band_min_harmonic, band_max_harmonic, wavelet_label)
+        print('success2')
+
+        # # Calculate Error handling potential length mismatches safely
         min_len_b = min(len(recon_b), len(gt_base))
         min_len_h = min(len(recon_h), len(gt_harmonic))
         
+        print('success3')
+
         sum_b = np.sum(np.abs(recon_b[:min_len_b] - gt_base[:min_len_b]))
         sum_h = np.sum(np.abs(recon_h[:min_len_h] - gt_harmonic[:min_len_h]))
         sum_t = sum_b + sum_h
@@ -144,54 +131,5 @@ plt.grid(True, which='both', linestyle='--', alpha=0.5)
 plt.legend()
 
 os.makedirs("plots", exist_ok=True)
-plt.savefig(f"plots/wavelet_sst_error_{parameter}.png", dpi=300)
-print(f"\nDone — Plot saved to plots/wavelet_sst_error_{parameter}.png")
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  WAVELET TOURNAMENT (STAYS FOR COMPARISON)
-# ═══════════════════════════════════════════════════════════════════════════
-
-wavelet_configs = [
-    ('gmw', {'beta': 3}),   
-    ('gmw', {'beta': 10}),  
-    ('morlet', {}),         
-    ('bump', {}),           
-]
-
-wavelet_labels = ["Morse (β=3)", "Morse (β=10)", "Morlet", "Bump"]
-final_errors = []
-
-print(f"\n[4] Comparing {len(wavelet_configs)} different mother wavelets...")
-
-for i, (name, params) in enumerate(wavelet_configs):
-    try:
-        W_obj = Wavelet((name, params))
-        Tx, Wx, freqs, scales, *_ = ssq_cwt(signal, W_obj, fs=fs)
-        
-        r_base = reconstruct_band_sst(Tx, freqs, W_obj, band_min_base, band_max_base)
-        r_harm = reconstruct_band_sst(Tx, freqs, W_obj, band_min_harmonic, band_max_harmonic)
-        
-        min_len = min(len(r_base), len(gt_base))
-        err = np.sum(np.abs(r_base[:min_len] - gt_base[:min_len])) + \
-              np.sum(np.abs(r_harm[:min_len] - gt_harmonic[:min_len]))
-        
-        final_errors.append(err)
-        print(f"  ✓ {wavelet_labels[i]}: Total Error = {err:.4f}")
-    except Exception as e:
-        print(f"  ✗ Error testing {wavelet_labels[i]}: {e}")
-        final_errors.append(np.nan)
-
-plt.figure(figsize=(10, 5))
-bars = plt.bar(wavelet_labels, final_errors, color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'])
-
-for bar in bars:
-    yval = bar.get_height()
-    if not np.isnan(yval):
-        plt.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.2f}', va='bottom', ha='center')
-
-plt.ylabel("Total Summed Absolute Error (nm)")
-plt.title("Mother Wavelet Performance Comparison (via WSST)")
-plt.tight_layout()
-plt.savefig("plots/wavelet_family_comparison.png", dpi=300)
-
-print("\nTournament complete! Check 'plots/wavelet_family_comparison.png'")
+plt.savefig(f"plots/wavelet_sst_error_{parameter}_NEW.png", dpi=300)
+print(f"\nDone — Plot saved to plots/wavelet_sst_error_{parameter}_NEW.png")
