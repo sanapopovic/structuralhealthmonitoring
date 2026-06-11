@@ -370,7 +370,7 @@ def reconstruct_band_cwt(
     sig,
     band_min,
     band_max,
-    wavelet="cmor3.0-1.0",
+    wavelet,
     fmin=1.0e6,
     fmax=4.5e6,
     n_freqs=400,
