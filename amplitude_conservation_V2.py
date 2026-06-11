@@ -46,14 +46,14 @@ time_stamp_harm = {"A1": 66.3568, "S4": 71.6575, "S2": 75.8788, "A4": 93.6327}
 
 
 # -----------------------------
-# AMPLITUDE (SINGLE DEFINITION)
+# AMPLITUDE 
 # -----------------------------
 def amplitude(x):
     return np.max(np.abs(hilbert(x)))
 
 
 # -----------------------------
-# BETA (CONSISTENT)
+# BETA
 # -----------------------------
 def compute_beta(A_S2, A_S4, beta_ref=10):
 
@@ -65,7 +65,7 @@ def compute_beta(A_S2, A_S4, beta_ref=10):
 
 
 # -----------------------------
-# TOA (UNCHANGED BUT CLEAN)
+# TOA
 # -----------------------------
 def ToA(recon_base, recon_harm, t):
 
@@ -85,7 +85,7 @@ def amps(res_base, res_harm):
 
 
 # =========================================================
-# STFT (LINEAR, STABLE)
+# STFT
 # =========================================================
 def STFT(t, signal):
 
@@ -151,7 +151,7 @@ def Wavelet(t, signal):
             t, signal,
             band_min=1.1e6,
             band_max=1.5e6,
-            wavelet="cmor7.5-5.5",
+            wavelet="cmor1.0-1.4",
             fmin=1e6,
             fmax=4.5e6,
             n_freqs=400
@@ -160,7 +160,7 @@ def Wavelet(t, signal):
             t, signal,
             band_min=2.3e6,
             band_max=2.9e6,
-            wavelet="cmor7.5-5.5",
+            wavelet="cmor1.0-1.4",
             fmin=1e6,
             fmax=4.5e6,
             n_freqs=400
@@ -236,7 +236,7 @@ def run(method, t, signal, noise_level):
 
 
 # -----------------------------
-# INITIAL VALUES (SAME METHOD)
+# INITIAL VALUES
 # -----------------------------
 def initial_values(data_base, data_harm):
 
