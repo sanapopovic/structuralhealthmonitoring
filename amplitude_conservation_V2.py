@@ -261,7 +261,7 @@ def initial_values(data_base, data_harm):
 def Main():
 
     #Plot noise level against beta error
-    noise_list = [0,0.5,1,1.5]
+    noise_list = [0,0.25, 0.5, 0.75, 1, 1.25, 1.5]
     beta_error_list_stft = []
     beta_error_list_hht = []
     beta_error_list_wavelet = []
@@ -311,14 +311,29 @@ def Main():
             print("----------------------")
 
     plt.figure()
-    plt.plot(noise_list, beta_error_list_stft, label="STFT")
-    plt.plot(noise_list, beta_error_list_hht, label="HHT")
-    plt.plot(noise_list, beta_error_list_wavelet, label="Wavelet")
+    plt.plot(noise_list, beta_error_list_stft, label="STFT", marker='o')
+    plt.plot(noise_list, beta_error_list_hht, label="HHT", marker='o')
+    plt.plot(noise_list, beta_error_list_wavelet, label="Wavelet", marker='o')
 
     plt.xlabel("Noise Level")
     plt.ylabel("Beta Error")
     plt.legend()
     plt.grid(True)
+
+    stft_norm   = [v / beta_error_list_stft[0]    for v in beta_error_list_stft]
+    hht_norm    = [v / beta_error_list_hht[0]     for v in beta_error_list_hht]
+    wavelet_norm = [v / beta_error_list_wavelet[0] for v in beta_error_list_wavelet]
+
+    plt.figure()
+    plt.plot(noise_list, stft_norm,    label="STFT", marker='o')
+    plt.plot(noise_list, hht_norm,     label="HHT", marker='o')
+    plt.plot(noise_list, wavelet_norm, label="Wavelet", marker='o')
+    plt.axhline(y=1, color='gray', linestyle=':', linewidth=1)  # reference line at 1
+    plt.xlabel("Noise level")
+    plt.ylabel("Relative β error (normalized to noise level=0)")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
     
 
 
